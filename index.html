@@ -1,0 +1,2774 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Casa Vacanze - Gestione (Standalone)</title>
+  <meta name="theme-color" content="#2e7d32" />
+  <style>
+    :root{
+      --green:#2e7d32;
+      --green2:#1b5e20;
+      --bg:#f5f7f8;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --danger:#b91c1c;
+      --warn:#b45309;
+      --ok:#166534;
+      --shadow: 0 10px 20px rgba(0,0,0,.06);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg); color:var(--text);
+    }
+    header{
+      position:sticky; top:0; z-index:5;
+      background:linear-gradient(90deg,var(--green2),var(--green));
+      color:white; padding:14px 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.12);
+    }
+    header .row{display:flex; align-items:center; gap:12px; justify-content:space-between}
+    header h1{font-size:16px; margin:0; letter-spacing:.2px}
+    header .badge{font-size:12px; opacity:.9}
+    main{padding:16px; max-width:1100px; margin:0 auto}
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin:12px 0 16px;
+    }
+    .tabbtn{
+      border:1px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.12);
+      color:white;
+      padding:9px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:13px;
+      user-select:none;
+    }
+    .tabbtn.active{background:white; color:var(--green2); border-color:white}
+    .grid{display:grid; gap:14px}
+    @media(min-width:900px){ .grid.cols2{grid-template-columns: 1fr 1fr} }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+    .card h2{margin:0 0 10px; font-size:15px}
+    .muted{color:var(--muted)}
+    .kpi{display:flex; align-items:baseline; gap:10px}
+    .kpi .n{font-size:28px; font-weight:700}
+    .kpi .l{font-size:12px; color:var(--muted)}
+    .btn{
+      border:1px solid var(--border);
+      background:white;
+      padding:9px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .btn.primary{
+      background:var(--green);
+      border-color:var(--green);
+      color:white;
+    }
+    .btn.danger{background:var(--danger); border-color:var(--danger); color:white}
+    .btn.warn{background:var(--warn); border-color:var(--warn); color:white}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .row.space{justify-content:space-between}
+    input, select, textarea{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px 10px;
+      font-size:13px;
+      background:white;
+      outline:none;
+    }
+    textarea{min-height:80px; resize:vertical}
+    label{font-size:12px; color:var(--muted)}
+    .form{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    @media(min-width:900px){
+      .form.cols2{grid-template-columns: 1fr 1fr}
+      .form.cols3{grid-template-columns: 1fr 1fr 1fr}
+    }
+    .table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid var(--border);
+      border-radius:12px;
+    }
+    .table th, .table td{
+      padding:10px;
+      border-bottom:1px solid var(--border);
+      font-size:13px;
+      text-align:left;
+      vertical-align:top;
+    }
+    .table th{background:#f9fafb; font-weight:600}
+    .table tr:last-child td{border-bottom:none}
+    .pill{
+      display:inline-flex;
+      padding:3px 9px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid var(--border);
+      background:#f9fafb;
+      gap:6px;
+      align-items:center;
+      white-space:nowrap;
+    }
+    .pill.ok{border-color:#bbf7d0; background:#ecfdf5; color:var(--ok)}
+    .pill.warn{border-color:#fde68a; background:#fffbeb; color:var(--warn)}
+    .pill.danger{border-color:#fecaca; background:#fef2f2; color:var(--danger)}
+    .split{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    @media(min-width:1000px){ .split{grid-template-columns: 420px 1fr} }
+    .hidden{display:none !important}
+    .cal{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:8px;
+    }
+    .cal .dow{
+      font-size:11px; color:var(--muted); text-align:center;
+      padding:6px 0;
+    }
+    .day{
+      background:white;
+      border:1px solid var(--border);
+      border-radius:12px;
+      min-height:86px;
+      padding:8px;
+      cursor:pointer;
+      position:relative;
+    }
+    .day .d{font-size:12px; color:var(--muted)}
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      display:inline-block; margin-right:4px;
+    }
+    .dot.r{background:#ef4444}
+    .dot.o{background:#f59e0b}
+    .dot.g{background:#22c55e}
+    .dot.b{background:#3b82f6}
+    .mini{font-size:11px; margin-top:6px}
+    .toast{
+      position:fixed; bottom:14px; left:50%;
+      transform:translateX(-50%);
+      background:#111827;
+      color:white;
+      padding:10px 12px;
+      border-radius:12px;
+      box-shadow:0 12px 30px rgba(0,0,0,.25);
+      font-size:13px;
+      max-width:90vw;
+      display:none;
+      z-index:50;
+    }
+    .hr{height:1px; background:var(--border); margin:12px 0}
+    .small{font-size:12px}
+    .right{text-align:right}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+  
+/* planning */
+.planning-wrap{overflow:auto; border:1px solid #e5e7eb; border-radius:12px; background:#fff}
+.planning-table{border-collapse:collapse; width:max-content; min-width:100%}
+.planning-table th,.planning-table td{border:1px solid #e5e7eb; padding:6px 8px; text-align:center; white-space:nowrap; font-size:12px}
+.planning-table th.sticky, .planning-table td.sticky{position:sticky; left:0; background:#fff; z-index:2; text-align:left}
+.planning-table th.day{position:sticky; top:0; background:#f9fafb; z-index:1}
+.cell-free{background:#ecfdf5}
+.cell-occ{background:#fee2e2}
+.cell-clean{background:#ffedd5}
+.badge-mini{display:inline-block; padding:2px 6px; border-radius:999px; font-size:11px; border:1px solid #e5e7eb; background:#fff}
+.kpi-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+.kpi-card{border:1px solid #e5e7eb; border-radius:14px; padding:10px; background:#fff}
+.kpi-title{font-weight:700; margin-bottom:6px}
+.kpi-row{display:flex; justify-content:space-between; padding:4px 0; cursor:pointer}
+.kpi-row:hover{background:#f9fafb}
+
+
+@media print{
+  body{background:#fff !important}
+  .topbar, .tabs, .btn, button, input, textarea, select, .no-print{display:none !important}
+  .tabpanel, section{display:block !important}
+  .card, .panel, .planning-wrap{box-shadow:none !important}
+  .planning-wrap{overflow:visible !important}
+  .planning-table{width:100% !important}
+  .print-only{display:block !important}
+  h1,h2{color:#000 !important}
+}
+.print-only{display:none}
+
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f5a2a">
+</head>
+<body>
+<header>
+  <div class="row">
+    <div>
+      <h1 id="titleApp"><img src="logo.jpg" alt="Logo" style="height:34px; width:auto; margin-right:10px; vertical-align:middle; border-radius:4px; background:#fff; padding:2px" />Casa Vacanze - Gestione</h1>
+      <div class="badge" id="subtitleApp">Standalone • funziona aprendo index.html • Ospite+Documento • Tassa + Pulizia + Totale</div>
+    </div>
+    <div class="row">
+      <span class="pill" style="border-color:rgba(255,255,255,.35); background:rgba(255,255,255,.12); color:#fff">
+        <span class="dot g" id="dotA"></span> <span id="topA"></span>
+      </span>
+      <span class="pill" style="border-color:rgba(255,255,255,.35); background:rgba(255,255,255,.12); color:#fff">
+        <span class="dot g" id="dotB"></span> <span id="topB"></span>
+      </span>
+    </div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Sezioni">
+    <button class="tabbtn active" data-tab="dashboard">Dashboard</button>
+    <button class="tabbtn" data-tab="prenotazioni">Prenotazioni</button>
+    <button class="tabbtn" data-tab="calendario">Calendario</button>
+      <button class="tabbtn" data-tab="planning">Planning</button>
+    <button class="tabbtn" data-tab="pulizie">Pulizie</button>
+    <button class="tabbtn" data-tab="report">Report</button>
+    <button class="tabbtn" data-tab="contabilita">Contabilità</button>
+<button class="tabbtn" data-tab="impostazioni">Impostazioni</button>
+  </div>
+</header>
+
+<main>
+  <!-- DASHBOARD -->
+  <section id="tab-dashboard" class="tabpanel">
+    <div class="grid cols2">
+      <div class="card">
+        <h2>Oggi</h2>
+        <div class="grid">
+          <div class="kpi"><div class="n" id="kpiArrivi">0</div><div class="l">Arrivi oggi</div></div>
+          <div class="kpi"><div class="n" id="kpiPartenze">0</div><div class="l">Partenze oggi</div></div>
+          <div class="row">
+            <button class="btn primary" id="btnNuovaPrenoTop">+ Nuova prenotazione</button>
+            <button class="btn" id="btnBackupTop">Backup</button>
+          </div>
+          <div class="small muted">Suggerimento: da “Prenotazioni” puoi segnare check-in / check-out e creare pulizie.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Stato appartamenti</h2>
+        <table class="table">
+          <thead><tr><th>Appartamento</th><th>Stato</th><th>Prossimo evento</th></tr></thead>
+          <tbody id="tblStati"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="row space">
+        <h2 style="margin:0">Arrivi / Partenze di oggi</h2>
+        <div class="row">
+          <button class="btn" id="btnRefreshDash">Aggiorna</button>
+        </div>
+      </div>
+      <div class="hr"></div>
+      <div class="grid cols2">
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px">Arrivi</h2>
+          <div id="dashArrivi" class="small muted">Nessun arrivo oggi.</div>
+        </div>
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px">Partenze</h2>
+          <div id="dashPartenze" class="small muted">Nessuna partenza oggi.</div>
+        </div>
+      </div>
+    </div>
+  
+<div class="small muted" style="margin-top:10px; text-align:right">Software creato da Giorgio Valentini – con supporto IA</div>
+</section>
+
+  <!-- PRENOTAZIONI -->
+  <section id="tab-prenotazioni" class="tabpanel hidden">
+    <div class="split">
+      <div class="card">
+        <div class="row space">
+          <h2 style="margin:0">Nuova / Modifica</h2>
+          <button class="btn" id="btnResetForm">Svuota</button>
+        </div>
+        <div class="hr"></div>
+
+        <form id="formPreno" class="form cols2" autocomplete="off">
+          <input type="hidden" id="prenoId" />
+          <div>
+            <label>Appartamento</label>
+            <select id="prenoApp">
+              <option value="A">Appartamento 1 OpenSpace</option>
+              <option value="B">Appartamento 2 MyHome</option>
+            </select>
+          </div>
+          <div>
+            <label>Canale</label>
+            <select id="prenoCanale">
+              <option>Airbnb</option>
+              <option>Booking</option>
+              <option>Diretto</option>
+              <option>Altro</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Nome</label>
+            <input id="prenoNome" placeholder="Es. Mario" />
+          </div>
+          <div>
+            <label>Cognome</label>
+            <input id="prenoCognome" placeholder="Es. Rossi" />
+          </div>
+          <div>
+            <label>Telefono</label>
+            <input id="prenoTel" placeholder="+39 ..." />
+          </div>
+
+          <div>
+            <label>Documento (tipo)</label>
+            <select id="prenoDocTipo">
+              <option value="">—</option>
+              <option value="CI">Carta d'identità</option>
+              <option value="PASS">Passaporto</option>
+              <option value="PAT">Patente</option>
+              <option value="ALTRO">Altro</option>
+            </select>
+          </div>
+          <div>
+            <label>Documento (numero)</label>
+            <input id="prenoDocNumero" placeholder="Numero documento" />
+          </div>
+
+          <div>
+            <label>Nazionalità</label>
+            <input id="prenoNazionalita" placeholder="Es. Italia" />
+          </div>
+          <div>
+            <label>Data di nascita</label>
+            <input id="prenoNascita" type="date" />
+          </div>
+
+
+          <div>
+            <label>Check-in (data)</label>
+            <input id="prenoIn" type="date" />
+          </div>
+          <div>
+            <label>Check-out (data)</label>
+            <input id="prenoOut" type="date" />
+          </div>
+
+          <div>
+            <label>Orario arrivo</label>
+            <input id="prenoOra" type="time" />
+          </div>
+          <div>
+            <label>N. ospiti</label>
+            <input id="prenoOspiti" type="number" min="1" value="2" />
+          </div>
+
+          <div>
+            <label>Prezzo totale (€)</label>
+            <input id="prenoPrezzo" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+
+          <div>
+            <label>Costo pulizia (€)</label>
+            <input id="prenoPulizia" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          <div>
+            <label>Tassa soggiorno (€) <span class="muted">(auto da impostazioni)</span></label>
+            <input id="prenoTassa" type="text" inputmode="decimal" placeholder="Es. 14.00" min="0" step="0.01" placeholder="0.00" />
+          
+            <div class="small muted">Formula: (ospiti - esenti) × notti × (tassa €/persona/notte)</div>
+            <button type="button" class="btn" id="btnCalcTassa">Calcola tassa</button>
+            <div style="height:8px"></div>
+            <label class="muted">Tassa totale (€)</label>
+            <input id="prenoTassaTot" type="text" readonly />
+
+          </div>
+          <div>
+            <label>Totale (€)</label>
+            <input id="prenoTotale" type="number" step="0.01" readonly />
+            <div class="small muted">Totale = Prezzo + Tassa + Pulizia</div>
+          </div>
+
+          <div class="form" style="grid-column:1/-1">
+            <label>Note</label>
+            <textarea id="prenoNote" placeholder="Es. Arrivo tardi, culla, ecc."></textarea>
+          </div>
+
+          <div>
+            <label>Stato</label>
+            <select id="prenoStato">
+              <option value="prenotata">Prenotata</option>
+              <option value="checkin">Check-in fatto</option>
+              <option value="checkout">Check-out fatto</option>
+              <option value="annullata">Annullata</option>
+            </select>
+          </div>
+
+          <div class="row" style="align-items:end">
+            <button type="submit" class="btn primary" id="btnSavePreno">Salva</button>
+            <button type="button" class="btn danger" id="btnDeletePreno" disabled>Elimina</button>
+          </div>
+
+          <div class="small muted" style="grid-column:1/-1">
+            Suggerimento: al “Check-out fatto” crea automaticamente un task pulizia per il giorno del check-out.
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="row space">
+          <h2 style="margin:0">Elenco prenotazioni</h2>
+          <div class="row">
+            <select id="filterApp" class="small" style="width:auto">
+              <option value="ALL">Tutti (A+B)</option>
+              <option value="A">Solo Appartamento 1 OpenSpace</option>
+              <option value="B">Solo Appartamento 2 MyHome</option>
+            </select>
+            <select id="filterStato" class="small" style="width:auto">
+              <option value="ALL">Tutti stati</option>
+              <option value="prenotata">Prenotata</option>
+              <option value="checkin">Check-in fatto</option>
+              <option value="checkout">Check-out fatto</option>
+              <option value="annullata">Annullata</option>
+            </select>
+            <button class="btn" id="btnExport">Export Excel</button>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="small muted" id="listEmpty">Nessuna prenotazione ancora.</div>
+        <table class="table hidden" id="tblPreno">
+          <thead>
+            <tr>
+              <th>Periodo</th>
+              <th>Ospite</th>
+              <th>App</th>
+              <th>Stato</th>
+              <th class="right">€</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tblPrenoBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALENDARIO -->
+  <section id="tab-calendario" class="tabpanel hidden">
+    <div class="card">
+      <div class="row space">
+        <h2 style="margin:0">Calendario</h2>
+        <div class="row"><button class="btn primary" id="btnXlsCalendario" onclick="exportCalendarioExcel2()">⬇ Excel</button><button class="btn" id="btnPrintCalendario" onclick="printCurrentView()" onclick="printTab('calendario')" onclick="printTab(\'calendario\')">🖨️ Stampa</button>
+          <button class="btn" id="calPrev">◀</button>
+          <div class="pill"><span id="calLabel"></span></div>
+          <button class="btn" id="calNext">▶</button>
+          <button class="btn" id="calToday">Oggi</button>
+        </div>
+      </div>
+      <div class="hr"></div>
+
+      <div class="cal" id="calGrid"></div>
+      <div class="hr"></div>
+      <div class="small muted" id="calHint">Clicca un giorno per vedere le prenotazioni.</div>
+      <div id="calDayDetails" class="small"></div>
+    </div>
+  </section>
+
+  <!-- PULIZIE -->
+  <section id="tab-pulizie" class="tabpanel hidden">
+    <div class="grid cols2">
+      <div class="card">
+        <div class="row space">
+        <h2 style="margin:0">Pulizie</h2>
+        <div class="row" style="gap:10px; align-items:center">
+          <label class="small muted">Mostra</label>
+          <select id="pulFilterApp" style="max-width:160px">
+            <option value="TUTTE">Tutte</option>
+            <option value="A">Appartamento 1 OpenSpace</option>
+            <option value="B">Appartamento 2 MyHome</option>
+          </select>
+          <button class="btn" id="btnExportPulizie">Export Excel</button>
+          <button class="btn" id="btnAddPulizia">+ Nuova pulizia</button>
+        </div>
+      </div>
+        <div class="hr"></div>
+        <div id="pulizieEmpty" class="small muted">Nessuna pulizia programmata.</div>
+        <table class="table hidden" id="tblPulizie">
+          <thead>
+            <tr><th>Data</th><th>App</th><th>Note</th><th>Stato</th><th></th></tr>
+          </thead>
+          <tbody id="tblPulizieBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Checklist rapida</h2>
+        <div class="small muted">Spunte veloci (non salvate):</div>
+        <div class="hr"></div>
+        <div class="form">
+          <label><input type="checkbox"> Bagno</label>
+          <label><input type="checkbox"> Letto e biancheria</label>
+          <label><input type="checkbox"> Pavimenti</label>
+          <label><input type="checkbox"> Cucina</label>
+          <label><input type="checkbox"> Spazzatura</label>
+          <label><input type="checkbox"> Controllo danni</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORT -->
+  <section id="tab-report" class="tabpanel hidden">
+    <div class="grid cols2">
+      <div class="card">
+        <h2>Incassi (mese selezionato)</h2>
+        <div class="row">
+          <input type="month" id="repMonth" style="width:auto" />
+          <button class="btn" id="btnRefreshReport">Aggiorna</button>
+        </div>
+        <div class="hr"></div>
+        <div class="kpi"><div class="n" id="repIncassi">0</div><div class="l">€ totali (prenotate / check-in / check-out)</div></div>
+        <div class="small muted">Nota: gli “Annullata” non vengono contati.</div>
+      </div>
+
+      <div class="card">
+        <h2>Occupazione (mese selezionato)</h2>
+        <div class="small muted">Stima notti occupate per Appartamento 1 OpenSpace e B.</div>
+        <div class="hr"></div>
+        <table class="table">
+          <thead><tr><th>App</th><th>Notti occupate</th></tr></thead>
+          <tbody>
+            <tr><td>Appartamento 1 OpenSpace</td><td id="repNottiA">0</td></tr>
+            <tr><td>Appartamento 2 MyHome</td><td id="repNottiB">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  
+  <!-- CONTABILITA -->
+  <section id="tab-contabilita" class="tabpanel hidden">
+    <div class="row space">
+      <h2 style="margin:0">Contabilità</h2>
+      <div class="row"><button class="btn primary" id="btnXlsReport2" onclick="exportReportExcel2()">⬇ Excel</button><button class="btn primary" id="btnXlsContabilita2" onclick="exportContabilitaExcel2()">⬇ Excel</button><button class="btn" id="btnPrintContabilita" onclick="printCurrentView()" onclick="printTab('contabilita')" onclick="printTab(\'contabilita\')">🖨️ Stampa</button>
+        <span class="badge">Periodo</span>
+        <input id="accFrom" type="date" />
+        <span class="muted">→</span>
+        <input id="accTo" type="date" />
+        <select id="accApp" class="select">
+          <option value="TUTTE">Tutte</option>
+          <option value="A">Appartamento 1 OpenSpace</option>
+          <option value="B">Appartamento 2 MyHome</option>
+        </select>
+        <button class="btn" id="btnAccAggiorna">Aggiorna</button>
+      </div>
+    </div>
+
+    <div class="grid cols3">
+      <div class="card">
+        <div class="muted">Tot Entrata (lordo)</div>
+        <div class="kpi"><span id="accEntrata">€ 0,00</span></div>
+        <div class="small muted">Somma Totale prenotazioni (Prezzo + Pulizia + Tassa soggiorno)</div>
+      </div>
+
+      <div class="card">
+        <div class="row space">
+          <div>
+            <div class="muted">IVA / tassa statale (%)</div>
+            <div class="kpi"><span id="accIva">€ 0,00</span></div>
+          </div>
+          <div style="min-width:130px">
+            <label class="small muted">Aliquota</label>
+            <input id="accIvaPerc" type="number" min="0" step="0.1" />
+          </div>
+        </div>
+        <div class="small muted">Calcolata su (Entrata − Tassa soggiorno)</div>
+      </div>
+
+      <div class="card">
+        <div class="muted">Netto guadagnato</div>
+        <div class="kpi"><span id="accNetto">€ 0,00</span></div>
+        <div class="small muted">Entrata − IVA − Spese pulizie − Spese varie − Tassa soggiorno</div>
+      </div>
+    </div>
+
+    <div class="grid cols2" style="margin-top:12px">
+      <div class="card">
+        <h3 style="margin-top:0">Dettaglio</h3>
+        <table class="table">
+          <tbody>
+            <tr><td>Entrata (lordo)</td><td class="right" id="accEntrata2">€ 0,00</td></tr>
+            <tr><td>Tassa soggiorno (da versare)</td><td class="right" id="accTassaSogg">€ 0,00</td></tr>
+            <tr><td>Base imponibile (Entrata − Tassa)</td><td class="right" id="accBase">€ 0,00</td></tr>
+            <tr><td>IVA / tassa statale</td><td class="right" id="accIva2">€ 0,00</td></tr>
+            <tr><td>Spese pulizie</td><td class="right" id="accPulizie">€ 0,00</td></tr>
+            <tr>
+              <td>Spese varie</td>
+              <td class="right">
+                <input id="accVarie" type="text" inputmode="decimal" style="max-width:140px; text-align:right" placeholder="0,00" />
+              </td>
+            </tr>
+            <tr><td><strong>NETTO</strong></td><td class="right"><strong id="accNetto2">€ 0,00</strong></td></tr>
+          </tbody>
+        </table>
+        <div class="small muted">Suggerimento: inserisci qui le spese extra (manutenzioni, biancheria, commissioni, ecc.).</div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Riepilogo prenotazioni nel periodo</h3>
+        <div class="small muted" id="accCount">0 prenotazioni</div>
+        <div style="margin-top:8px; max-height:260px; overflow:auto">
+          <table class="table" id="accTable">
+            <thead>
+              <tr>
+                <th>Periodo</th>
+                <th>Ospite</th>
+                <th>App</th>
+                <th class="right">Totale</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <button class="btn" id="btnAccExport">Export Excel Contabilità</button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- IMPOSTAZIONI -->
+  
+<!-- PLANNING -->
+<section id="tab-planning" class="tabpanel hidden">
+  <div class="row space">
+    <h2 style="margin:0">Planning</h2>
+    <div class="row" style="gap:10px; align-items:center"><button class="btn" id="btnPrintPlanning" onclick="printCurrentView()" onclick="printTab('planning')" onclick="printTab(\'planning\')">🖨️ Stampa</button>
+      <button class="btn" id="plPrev">◀</button>
+      <div class="badge-mini" id="plLabel">Mese</div>
+      <button class="btn" id="plNext">▶</button>
+      <button class="btn" id="plOggi">Vai a oggi</button>
+    </div>
+  </div>
+
+  <div class="planning-wrap">
+    <table class="planning-table" id="plTable"></table>
+  </div>
+
+  <div class="small muted" style="margin-top:8px">
+    Colori: 🟥 occupato · 🟧 pulizia (non fatta) · 🟩 libero. Clicca su un blocco occupato per aprire la prenotazione.
+  </div>
+</section>
+
+<section id="tab-impostazioni" class="tabpanel hidden">
+    <div class="grid cols2">
+      <div class="card">
+        <h2>Impostazioni</h2>
+        <div class="form cols2">
+          <div>
+            <label>Nome casa</label>
+            <input id="setNomeCasa" placeholder="Es. Re di Roma Apartments" />
+          </div>
+          <div>
+            <label>Nome Appartamento 1 OpenSpace</label>
+            <input id="setNomeA" placeholder="(lascia vuoto per usare 'Appartamento 1 OpenSpace')" />
+          </div>
+          <div>
+            <label>Nome Appartamento 2 MyHome</label>
+            <input id="setNomeB" placeholder="(lascia vuoto per usare 'Appartamento 2 MyHome')" />
+          </div>
+
+          <div>
+            <label>Orario standard check-in</label>
+            <input id="setOraIn" type="time" />
+          </div>
+          <div>
+            <label>Orario standard check-out</label>
+            <input id="setOraOut" type="time" />
+          </div>
+
+          <div>
+            <label>Aliquota IVA / Tassa statale (%)</label>
+            <input id="setIvaPerc" type="number" min="0" step="0.01" placeholder="22" />
+          </div>
+          <div>
+            <label>Costo pulizia predefinito (€)</label>
+            <input id="setPuliziaDefault" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+<div>
+            <label>Persone esenti (default)</label>
+            <input id="setEsenti" type="number" min="0" step="1" value="0" />
+          </div>
+
+          <div class="row" style="align-items:end">
+            <button class="btn primary" id="btnSaveSettings">Salva</button>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <h2 style="font-size:14px;margin:0 0 8px">Template messaggi</h2>
+        <div class="form">
+          <label>Messaggio pre check-in</label>
+          <textarea id="tplCheckin"></textarea>
+          <label>Messaggio check-out</label>
+          <textarea id="tplCheckout"></textarea>
+          <div class="row">
+            <button class="btn" id="btnCopyCheckin">Copia check-in</button>
+            <button class="btn" id="btnCopyCheckout">Copia check-out</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Backup / Ripristino</h2>
+        <div class="small muted">Funziona anche aprendo il file. Salva un JSON sul PC.</div>
+        <div class="hr"></div>
+        <div class="row">
+          <button class="btn" id="btnBackup">Scarica Backup (JSON)</button>
+          <label class="btn" style="display:inline-flex; align-items:center; gap:8px">
+            Ripristina
+            <input id="fileRestore" type="file" accept="application/json" style="display:none" />
+          </label>
+        </div>
+        <div class="hr"></div>
+        <h2 style="font-size:14px;margin:0 0 8px">Reset totale</h2>
+        <button class="btn danger" id="btnResetAll">Cancella TUTTI i dati</button>
+        <div class="small muted" style="margin-top:8px">Attenzione: azione irreversibile.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+
+/* =========================
+   CASA VACANZE - STANDALONE
+   - Tutto in un file
+   - Funziona su file://
+   - Dati in localStorage
+   ========================= */
+
+const LS_KEY = "cv_standalone_v1";
+const SETTINGS_KEY = "cv_settings_v1";
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+function todayISO(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const da = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${da}`;
+}
+function fmtEUR(n){
+  const v = Number(n||0);
+  return v.toLocaleString("it-IT", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function diffDays(startStr, endStr){
+  // nights between dates: [start, end) - supports GG/MM/AAAA and YYYY-MM-DD
+  const s0 = parseDateAny(startStr);
+  const e0 = parseDateAny(endStr);
+  if(!s0 || !e0) return 0;
+  const s = new Date(s0.getFullYear(), s0.getMonth(), s0.getDate());
+  const e = new Date(e0.getFullYear(), e0.getMonth(), e0.getDate());
+  const ms = e - s;
+  return Math.max(0, Math.round(ms / (1000*60*60*24)));
+}
+function clampStr(s){ return (s||"").trim(); }
+
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(toast._tm);
+  toast._tm = setTimeout(()=> t.style.display="none", 2200);
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return { prenotazioni: [], pulizie: [] };
+    const obj = JSON.parse(raw);
+    obj.prenotazioni ||= [];
+    obj.pulizie ||= [];
+    return obj;
+  }catch(e){
+    console.warn(e);
+    return { prenotazioni: [], pulizie: [] };
+  }
+}
+function saveState(state){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+
+function loadSettings(){
+  const def = {
+    nomeCasa: "Casa Vacanze - Gestione",
+    oraIn: "15:00",
+    oraOut: "10:00",
+    tplCheckin: "Ciao {NOME},\nTi aspettiamo oggi. Check-in dalle {ORA_IN}.\nWi‑Fi: (inserisci qui)\nA presto!",
+    tplCheckout: "Ciao {NOME},\nRicordo check-out entro le {ORA_OUT}.\nPer favore lascia le chiavi come concordato.\nGrazie!",
+    tassaPPN: 0,
+    esenti: 0,
+    ivaPerc: 22,
+    puliziaDefault: 0,
+    accVarie: 0,
+    nomeA: "",
+    nomeB: ""
+  };
+  try{
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if(!raw) return def;
+    const obj = JSON.parse(raw);
+    return {...def, ...obj};
+  }catch(e){ return def; }
+}
+function saveSettings(s){
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+}
+
+let state = loadState();
+try{ migrateAllDatesToIT(); }catch(e){}
+let settings = loadSettings();
+
+
+function appName(app){
+  if(app==="A") return (settings.nomeA && settings.nomeA.trim()) ? settings.nomeA.trim() : "Appartamento 1 OpenSpace";
+  if(app==="B") return (settings.nomeB && settings.nomeB.trim()) ? settings.nomeB.trim() : "Appartamento 2 MyHome";
+  return app || "";
+}
+function refreshAppNames(){
+  // header
+  const a = $("#topA"); const b = $("#topB");
+  if(a) a.textContent = appName("A");
+  if(b) b.textContent = appName("B");
+
+  // update any select options that contain A/B labels
+  document.querySelectorAll('select option[value="A"]').forEach(o=>{ o.textContent = appName("A"); });
+  document.querySelectorAll('select option[value="B"]').forEach(o=>{ o.textContent = appName("B"); });
+  // keep "TUTTE" etc untouched
+}
+
+function updateTopIcons(){
+  const today = todayISO();
+  const isOcc = (app)=> state.prenotazioni.some(p => p.app===app && p.stato!=="annullata" && (p.checkin||"")<=today && (p.checkout||"")>today);
+  const needsClean = (app)=> state.pulizie.some(c => (c.app||"A")===app && !c.done && c.data===today);
+
+  const dotA = $("#dotA"); const dotB = $("#dotB");
+  const topA = $("#topA"); const topB = $("#topB");
+  if(!dotA || !dotB || !topA || !topB) return;
+
+  const set = (dot, labelEl, app)=>{
+    let status="Libero";
+    let cls="dot g";
+    if(needsClean(app)){ status="Da pulire"; cls="dot o"; }
+    else if(isOcc(app)){ status="Occupato"; cls="dot r"; }
+    dot.className = cls;
+    labelEl.textContent = `${appName(app)} – ${status}`;
+  };
+  set(dotA, topA, "A");
+  set(dotB, topB, "B");
+}
+
+/* ===== Tabs ===== */
+function showTab(name){
+  $$(".tabbtn").forEach(b => b.classList.toggle("active", b.dataset.tab===name));
+  $$(".tabpanel").forEach(p => p.classList.add("hidden"));
+  const panel = $("#tab-"+name);
+  if(panel) panel.classList.remove("hidden");
+  // refresh section
+  if(name==="dashboard") renderDashboard();
+  if(name==="prenotazioni") renderPrenotazioni();
+  if(name==="calendario") renderCalendario();
+  if(name==="planning") { try{ renderPlanning(); }catch(e){} }
+  if(name==="pulizie") renderPulizie();
+  if(name==="report") renderReport();
+  if(name==="impostazioni") renderSettings();
+  if(name==="contabilita") renderContabilita();
+}
+
+$$(".tabbtn").forEach(b => b.addEventListener("click", ()=> showTab(b.dataset.tab)));
+
+/* ===== Prenotazioni CRUD ===== */
+function uuid(){
+  // simple unique id
+  return "p_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8);
+}
+function getPrenoForm(){
+  return {
+    id: $("#prenoId").value || "",
+    app: $("#prenoApp").value,
+    canale: $("#prenoCanale").value,
+    nome: clampStr($("#prenoNome").value),
+    cognome: clampStr($("#prenoCognome").value),
+    tel: clampStr($("#prenoTel").value),
+    docTipo: $("#prenoDocTipo").value,
+    docNumero: clampStr($("#prenoDocNumero").value),
+    nazionalita: clampStr($("#prenoNazionalita").value),
+    nascita: $("#prenoNascita").value,
+    checkin: $("#prenoIn").value,
+    checkout: $("#prenoOut").value,
+    ora: $("#prenoOra").value,
+    ospiti: Number($("#prenoOspiti").value||1),
+    prezzo: parseEuro($("#prenoPrezzo").value),
+    pulizia: parseEuro($("#prenoPulizia").value),
+    tassaRate: parseEuro($("#prenoTassa").value),
+    tassa: parseEuro($("#prenoTassaTot").value),
+    totale: parseEuro($("#prenoTotale").value),
+    note: clampStr($("#prenoNote").value),
+    stato: $("#prenoStato").value
+  };
+}
+function setPrenoForm(p){
+  $("#prenoId").value = p?.id || "";
+  $("#prenoApp").value = p?.app || "A";
+  $("#prenoCanale").value = p?.canale || "Airbnb";
+
+  $("#prenoNome").value = p?.nome || "";
+  $("#prenoCognome").value = p?.cognome || "";
+  $("#prenoTel").value = p?.tel || "";
+
+  $("#prenoDocTipo").value = p?.docTipo || "";
+  $("#prenoDocNumero").value = p?.docNumero || "";
+  $("#prenoNazionalita").value = p?.nazionalita || "";
+  $("#prenoNascita").value = p?.nascita || "";
+
+  $("#prenoIn").value = p?.checkin || "";
+  $("#prenoOut").value = p?.checkout || "";
+  $("#prenoOra").value = p?.ora || "";
+  $("#prenoOspiti").value = p?.ospiti ?? 2;
+
+  $("#prenoPrezzo").value = (p?.prezzo ?? "");
+  $("#prenoPulizia").value = (p?.pulizia ?? "");
+  $("#prenoTassa").value = (p?.tassaRate ?? "");
+  $("#prenoTassaTot").value = (p?.tassa ?? "");
+  // Totale: calcolato se mancante
+  const tot = Number(p?.totale ?? (Number(p?.prezzo||0) + Number(p?.tassa||0) + Number(p?.pulizia||0)));
+  $("#prenoTotale").value = isFinite(tot) ? tot.toFixed(2) : "0.00";
+
+  $("#prenoNote").value = p?.note || "";
+  $("#prenoStato").value = p?.stato || "prenotata";
+  $("#btnDeletePreno").disabled = !p?.id;
+
+  // keep total synced
+  updateTotaleFromForm();
+}
+function resetPrenoForm(){
+  setPrenoForm({app:"A", canale:"Airbnb", ospiti:2, stato:"prenotata", ora: settings.oraIn});
+  $("#prenoIn").value = todayISO();
+  const d = new Date();
+  d.setDate(d.getDate()+2);
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), da=String(d.getDate()).padStart(2,"0");
+  $("#prenoOut").value = `${y}-${m}-${da}`;
+  $("#btnDeletePreno").disabled = true;
+  // default pulizia e orario check-in
+  if($("#prenoPulizia") && (!$("#prenoPulizia").value || $("#prenoPulizia").value==="0")) $("#prenoPulizia").value = Number(settings.puliziaDefault||0).toFixed(2);
+  if($("#prenoOra") && !$("#prenoOra").value) $("#prenoOra").value = settings.oraCheckin || "15:00";
+  try{updateTotaleFromForm();}catch(e){}
+
+}
+
+$("#btnNuovaPrenoTop").addEventListener("click", ()=> { showTab("prenotazioni"); resetPrenoForm(); });
+$("#btnResetForm").addEventListener("click", resetPrenoForm);
+
+$("#formPreno").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const p = getPrenoForm();
+  if(!p.nome || !p.cognome){ toast("Inserisci nome e cognome ospite."); return; }
+  if(!p.checkin || !p.checkout){ toast("Inserisci date check-in e check-out."); return; }
+  if(new Date(p.checkout) <= new Date(p.checkin)){ toast("Il check-out deve essere dopo il check-in."); return; }
+
+
+  // Calcolo automatico tassa (se non inserita) usando impostazioni €/persona/notte
+  if((String($("#prenoTassa").value||"").trim()==="") && Number(settings.tassaPPN||0) > 0){
+    const notti = diffDays(p.checkin, p.checkout);
+    const paganti = Math.max(0, Number(p.ospiti||0) - Number(settings.esenti||0));
+    p.tassa = paganti * notti * Number(settings.tassaPPN||0);
+    $("#prenoTassa").value = p.tassa ? Number(p.tassa).toFixed(2) : "0.00";
+  }
+
+  // Totale sempre aggiornato (Prezzo + Tassa + Pulizia)
+  p.totale = parseEuro(p.prezzo) + parseEuro(p.tassa) + parseEuro(p.pulizia);
+  $("#prenoTotale").value = isFinite(p.totale) ? p.totale.toFixed(2) : "0.00";
+  const isNew = !p.id;
+  if(isNew) p.id = uuid();
+
+  // auto set ora if empty
+  if(!p.ora) p.ora = settings.oraIn;
+
+  // save
+  const idx = state.prenotazioni.findIndex(x=>x.id===p.id);
+  if(idx>=0) state.prenotazioni[idx]=p;
+  else state.prenotazioni.push(p);
+
+  // AUTO-PULIZIA: 1 giorno prima del check-in (sempre)
+  ensurePuliziaBeforeCheckin(p);
+
+  // auto-create pulizia quando fai check-out
+  if(p.stato==="checkout"){
+    ensurePuliziaForCheckout(p);
+  }
+
+  saveState(state);
+  toast(isNew ? "Prenotazione salvata." : "Prenotazione aggiornata.");
+  renderPrenotazioni();
+  renderDashboard();
+  renderCalendario();
+  renderPulizie();
+});
+
+$("#btnDeletePreno").addEventListener("click", ()=>{
+  const id = $("#prenoId").value;
+  if(!id) return;
+  if(!confirm("Eliminare questa prenotazione?")) return;
+  state.prenotazioni = state.prenotazioni.filter(p=>p.id!==id);
+  state.pulizie = state.pulizie.filter(c=>c.prenoId!==id);
+  saveState(state);
+  toast("Prenotazione eliminata.");
+  resetPrenoForm();
+  renderPrenotazioni();
+  renderDashboard();
+  renderCalendario();
+});
+
+function pillForStatus(st){
+  if(st==="prenotata") return `<span class="pill warn">Prenotata</span>`;
+  if(st==="checkin") return `<span class="pill ok">Check-in</span>`;
+  if(st==="checkout") return `<span class="pill ok">Check-out</span>`;
+  if(st==="annullata") return `<span class="pill danger">Annullata</span>`;
+  return `<span class="pill">${st}</span>`;
+}
+function renderPrenotazioni(){
+  refreshAppNames();
+  updateTopIcons();
+  const appF = $("#filterApp").value;
+  const stF = $("#filterStato").value;
+
+  let arr = [...state.prenotazioni];
+  arr.sort((a,b)=> (a.checkin||"").localeCompare(b.checkin||""));
+
+  if(appF!=="ALL") arr = arr.filter(p=>p.app===appF);
+  if(stF!=="ALL") arr = arr.filter(p=>p.stato===stF);
+
+  const empty = $("#listEmpty");
+  const tbl = $("#tblPreno");
+  const body = $("#tblPrenoBody");
+  body.innerHTML = "";
+
+  if(arr.length===0){
+    empty.classList.remove("hidden");
+    tbl.classList.add("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+  tbl.classList.remove("hidden");
+
+  for(const p of arr){
+    const nights = diffDays(p.checkin, p.checkout);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><div><strong>${p.checkin}</strong> → <strong>${p.checkout}</strong></div><div class="muted small">${nights} notti</div></td>
+      <td><div><strong>${escapeHtml(fullName(p))}</strong></div><div class="muted small">${escapeHtml(p.tel||"")}</div></td>
+      <td><span class="pill">${appName(p.app)}</span></td>
+      <td>${pillForStatus(p.stato)}</td>
+      <td class="right">${fmtEUR(p.totale ?? (Number(p.prezzo||0)+Number(p.tassa||0)+Number(p.pulizia||0)))}</td>
+      <td class="right">
+        <button class="btn" data-edit="${p.id}">Apri</button>
+        <button class="btn" data-msg="${p.id}">Messaggi</button>
+        <button class="btn" data-wa-in="${p.id}">WA Check-in</button>
+        <button class="btn" data-wa-out="${p.id}">WA Check-out</button>
+      </td>
+    `;
+    body.appendChild(tr);
+  }
+
+  // bind
+  $$("button[data-edit]").forEach(b => b.onclick = ()=>{
+    const id = b.getAttribute("data-edit");
+    const p = state.prenotazioni.find(x=>x.id===id);
+    if(p){ setPrenoForm(p); toast("Caricata in modifica."); window.scrollTo({top:0, behavior:"smooth"}); }
+  });
+  $$("button[data-msg]").forEach(b => b.onclick = ()=>{
+    const id = b.getAttribute("data-msg");
+    const p = state.prenotazioni.find(x=>x.id===id);
+    if(!p) return;
+    if(!p.tel){ toast("Manca il telefono dell'ospite."); return; }
+    // apre WhatsApp con chat pronta (testo vuoto: scrivi tu)
+    openWAMessage(p.tel, "");
+    toast("Apro WhatsApp…");
+  });
+
+  $$("button[data-wa-in]").forEach(b => b.onclick = ()=>{
+    const id = b.getAttribute("data-wa-in");
+    const p = state.prenotazioni.find(x=>x.id===id);
+    if(!p) return;
+    if(!p.tel){ toast("Manca il telefono dell'ospite."); return; }
+    const msg = buildMsg(settings.tplCheckin, p);
+    openWAMessage(p.tel, msg);
+  });
+  $$("button[data-wa-out]").forEach(b => b.onclick = ()=>{
+    const id = b.getAttribute("data-wa-out");
+    const p = state.prenotazioni.find(x=>x.id===id);
+    if(!p) return;
+    if(!p.tel){ toast("Manca il telefono dell'ospite."); return; }
+    const msg = buildMsg(settings.tplCheckout, p);
+    openWAMessage(p.tel, msg);
+  });
+
+}
+
+
+function parseEuro(v){
+  // accetta "12,50" o "12.50"
+  const s = String(v??"").trim().replace(",", ".");
+  const n = Number(s);
+  return isFinite(n) ? n : 0;
+}
+
+function updateTotaleFromForm(){
+  const prezzo = parseEuro($("#prenoPrezzo").value);
+  const tassa = parseEuro($("#prenoTassaTot").value);
+  const pulizia = parseEuro($("#prenoPulizia").value);
+  const tot = prezzo + tassa + pulizia;
+  $("#prenoTotale").value = isFinite(tot) ? tot.toFixed(2) : "0.00";
+}
+
+$("#btnCalcTassa").addEventListener("click", ()=>{
+  const p = getPrenoForm();
+  if(!p.checkin || !p.checkout){ toast("Inserisci check-in e check-out."); return; }
+  const notti = diffDays(p.checkin, p.checkout);
+  const rate = parseEuro($("#prenoTassa").value);   // €/persona/notte inserita da te
+  const esenti = Number(settings.esenti||0);
+  const paganti = Math.max(0, Number(p.ospiti||0) - esenti);
+  const tassaTot = paganti * notti * rate;
+  $("#prenoTassaTot").value = tassaTot ? tassaTot.toFixed(2) : "0.00";
+  updateTotaleFromForm();
+  toast("Tassa calcolata e sommata al totale.");
+});
+
+$("#prenoPrezzo").addEventListener("input", updateTotaleFromForm);
+$("#prenoTassaTot").addEventListener("input", updateTotaleFromForm);
+$("#prenoPulizia").addEventListener("input", updateTotaleFromForm);
+
+$("#filterApp").addEventListener("change", renderPrenotazioni);
+$("#filterStato").addEventListener("change", renderPrenotazioni);
+
+$("#btnExport").addEventListener("click", ()=>{
+  // Export Excel semplice (.xls HTML): si apre direttamente in Excel
+  const headers = ["Periodo","Ospite","Telefono","Documento","Nazionalità","App","Stato","Canale","Ospiti","Prezzo (€)","Pulizia (€)","Tassa €/persona/notte","Tassa totale (€)","Totale (€)","Note"];
+  const rows = state.prenotazioni
+    .slice()
+    .sort((a,b)=> (a.checkin||"").localeCompare(b.checkin||""))
+    .map(p => ([
+      `${p.checkin} → ${p.checkout}`,
+      fullName(p)||"",
+      p.tel||"",
+      ((p.docTipo||"") + (p.docNumero?(" "+p.docNumero):"")).trim(),
+      p.nazionalita||"",
+      appName(p.app),
+      p.stato||"",
+      p.canale||"",
+      String(p.ospiti??""),
+      String(p.prezzo??""),
+      String(p.pulizia??""),
+      String(p.tassaRate??""),
+      String(p.tassa??""),
+      String((p.totale ?? (Number(p.prezzo||0)+Number(p.tassa||0)+Number(p.pulizia||0))) ?? ""),
+      (p.note||"").replaceAll("\n"," ")
+    ]));
+
+  const esc = (s)=> String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  let table = "<table border='1' cellspacing='0' cellpadding='4'><tr>";
+  for(const h of headers) table += `<th style="background:#f3f4f6">${esc(h)}</th>`;
+  table += "</tr>";
+  for(const r of rows){
+    table += "<tr>";
+    for(const c of r) table += `<td>${esc(c)}</td>`;
+    table += "</tr>";
+  }
+  table += "</table>";
+
+  const html = `<!doctype html><html><head><meta charset="utf-8">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f5a2a">
+</head><body>${table}
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js")
+        .then(()=>console.log("SW OK"))
+        .catch((e)=>console.log("SW ERR", e));
+    });
+  }
+</script>
+
+<!-- HTTPS_REQUIRED_BANNER -->
+<div id="httpsWarn" style="display:none; position:fixed; left:10px; right:10px; bottom:10px; z-index:9999; background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:10px 12px; border-radius:10px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size:14px; box-shadow:0 6px 18px rgba(0,0,0,.12);">
+  <b>⚠️ Offline su iPhone/iPad:</b> per funzionare anche senza internet, l’app va installata da un link <b>HTTPS</b>.  
+  Se la apri da rete locale <b>http://</b>, iOS spesso blocca il salvataggio offline.
+</div>
+<script>
+(function(){
+  try{
+    if(location.protocol !== "https:" && location.hostname !== "localhost"){
+      document.getElementById("httpsWarn").style.display = "block";
+    }
+  }catch(e){}
+})();
+</script>
+
+</body></html>`;
+  downloadText(html, `prenotazioni-${todayISO()}.xls`, "application/vnd.ms-excel");
+  toast("Export Excel creato.");
+});
+function downloadText(text, filename, mime){
+  const blob = new Blob([text], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1200);
+}
+
+/* ===== Pulizie ===== */
+function uidClean(){ return "c_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8); }
+
+function ensurePuliziaForCheckout(p){
+  // pulizia DOPO soggiorno (giorno checkout)
+  const exists = state.pulizie.some(c => c.prenoId===p.id && (c.kind||"checkout")==="checkout");
+  if(exists) return;
+  state.pulizie.push({
+    id: uidClean(),
+    kind: "checkout",
+    data: p.checkout,
+    app: p.app,
+    note: `Pulizia dopo soggiorno: ${fullName(p)}`,
+    done: false,
+    prenoId: p.id
+  });
+}
+
+function ensurePuliziaBeforeCheckin(p){
+  // pulizia PRIMA arrivo (1 giorno prima del check-in)
+  if(!p.checkin) return;
+  const d = new Date(p.checkin + "T00:00:00");
+  d.setDate(d.getDate() - 1);
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const da = String(d.getDate()).padStart(2,"0");
+  const dataPulizia = `${y}-${m}-${da}`;
+
+  const existing = state.pulizie.find(c => c.prenoId===p.id && c.kind==="precheckin");
+  const note = `Pulizia prima arrivo: ${fullName(p)} (check-in ${p.checkin})`;
+
+  if(existing){
+    existing.data = dataPulizia;
+    existing.app = p.app;
+    existing.note = note;
+  }else{
+    state.pulizie.push({
+      id: uidClean(),
+      kind: "precheckin",
+      data: dataPulizia,
+      app: p.app,
+      note,
+      done: false,
+      prenoId: p.id
+    });
+  }
+}
+
+
+function renderPulizie(){
+  refreshAppNames();
+  updateTopIcons();
+  let arr = [...state.pulizie];
+  const f = ($("#pulFilterApp")?.value || "TUTTE");
+  if(f!=="TUTTE") arr = arr.filter(c => (c.app||"A")===f);
+
+  arr.sort((a,b)=> (a.data||"").localeCompare(b.data||""));
+
+  const empty = $("#pulizieEmpty");
+  const tbl = $("#tblPulizie");
+  const body = $("#tblPulizieBody");
+  body.innerHTML = "";
+
+  if(arr.length===0){
+    empty.classList.remove("hidden");
+    tbl.classList.add("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+  tbl.classList.remove("hidden");
+
+  for(const c of arr){
+    const tr = document.createElement("tr");
+    const st = c.done ? `<span class="pill ok">Fatto</span>` : `<span class="pill warn">Da fare</span>`;
+    tr.innerHTML = `
+      <td><strong>${c.data}</strong></td>
+      <td><span class="pill">${c.app}</span></td>
+      <td>${escapeHtml(c.note||"")}</td>
+      <td>${st}</td>
+      <td class="right">
+        <button class="btn" data-done="${c.id}">${c.done ? "Annulla" : "Fatto"}</button>
+        <button class="btn danger" data-del="${c.id}">X</button>
+      </td>
+    `;
+    body.appendChild(tr);
+  }
+
+  $$("button[data-done]").forEach(b => b.onclick = ()=>{
+    const id = b.getAttribute("data-done");
+    const c = state.pulizie.find(x=>x.id===id);
+    if(!c) return;
+    c.done = !c.done;
+    saveState(state);
+    renderPulizie();
+    toast(c.done ? "Segnata come fatta." : "Segnata da fare.");
+  });
+  $$("button[data-del]").forEach(b => b.onclick = ()=>{
+    const id = b.getAttribute("data-del");
+    if(!confirm("Eliminare questa pulizia?")) return;
+    state.pulizie = state.pulizie.filter(x=>x.id!==id);
+    saveState(state);
+    renderPulizie();
+    toast("Pulizia eliminata.");
+  });
+}
+
+
+$("#btnExportPulizie").addEventListener("click", ()=>{
+  // Export Excel semplice per Pulizie (.xls HTML)
+  const headers = ["Data","App","Stato","Note","Collegata a prenotazione"];
+  const f = ($("#pulFilterApp")?.value || "TUTTE");
+  const rows = state.pulizie
+    .filter(c => (f==="TUTTE") ? true : ((c.app||"A")===f))
+    .slice()
+    .sort((a,b)=> (a.data||"").localeCompare(b.data||""))
+    .map(c => ([
+      c.data||"",
+      appName(c.app),
+      c.done ? "Fatto" : "Da fare",
+      (c.note||"").replaceAll("\n"," "),
+      c.prenoId ? "Sì" : "No"
+    ]));
+
+  const esc = (s)=> String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  let table = "<table border='1' cellspacing='0' cellpadding='4'><tr>";
+  for(const h of headers) table += `<th style="background:#f3f4f6">${esc(h)}</th>`;
+  table += "</tr>";
+  for(const r of rows){
+    table += "<tr>";
+    for(const c of r) table += `<td>${esc(c)}</td>`;
+    table += "</tr>";
+  }
+  table += "</table>";
+
+  const html = `<!doctype html><html><head><meta charset="utf-8">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f5a2a">
+</head><body>${table}
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js")
+        .then(()=>console.log("SW OK"))
+        .catch((e)=>console.log("SW ERR", e));
+    });
+  }
+</script>
+
+<!-- HTTPS_REQUIRED_BANNER -->
+<div id="httpsWarn" style="display:none; position:fixed; left:10px; right:10px; bottom:10px; z-index:9999; background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:10px 12px; border-radius:10px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size:14px; box-shadow:0 6px 18px rgba(0,0,0,.12);">
+  <b>⚠️ Offline su iPhone/iPad:</b> per funzionare anche senza internet, l’app va installata da un link <b>HTTPS</b>.  
+  Se la apri da rete locale <b>http://</b>, iOS spesso blocca il salvataggio offline.
+</div>
+<script>
+(function(){
+  try{
+    if(location.protocol !== "https:" && location.hostname !== "localhost"){
+      document.getElementById("httpsWarn").style.display = "block";
+    }
+  }catch(e){}
+})();
+</script>
+
+</body></html>`;
+  downloadText(html, `pulizie-${todayISO()}.xls`, "application/vnd.ms-excel");
+  toast("Export pulizie creato.");
+});
+
+$("#pulFilterApp").addEventListener("change", renderPulizie);
+
+$("#btnAddPulizia").addEventListener("click", ()=>{
+  const data = prompt("Data pulizia (AAAA-MM-GG):", todayISO());
+  if(!data) return;
+  const defApp = ($("#pulFilterApp")?.value && $("#pulFilterApp").value!=="TUTTE") ? $("#pulFilterApp").value : "A";
+  const app = prompt("Appartamento (A o B):", defApp);
+  const note = prompt("Note:", "Pulizia");
+  state.pulizie.push({id:uidClean(), data, app:(app||"A").toUpperCase()==="B"?"B":"A", note: note||"", done:false, prenoId:""});
+  saveState(state);
+  renderPulizie();
+  toast("Pulizia aggiunta.");
+});
+
+/* ===== Dashboard ===== */
+function upcomingForApp(app){
+  const today = todayISO();
+  // find next reservation that is not cancelled and ends after today
+  const arr = state.prenotazioni
+    .filter(p=>p.app===app && p.stato!=="annullata")
+    .sort((a,b)=> (a.checkin||"").localeCompare(b.checkin||""));
+  for(const p of arr){
+    if(p.checkout >= today) return p;
+  }
+  return null;
+}
+function statusForApp(app){
+  const today = todayISO();
+  // check current occupancy by date range
+  const cur = state.prenotazioni.find(p =>
+    p.app===app && p.stato!=="annullata" &&
+    p.checkin <= today && p.checkout > today
+  );
+  if(cur){
+    return {label:"Occupato", pill:"danger", next:`Ospite: ${cur.nome} • fino ${cur.checkout}`};
+  }
+  // if there is cleaning pending today or past
+  const clean = state.pulizie.find(c => c.app===app && !c.done && c.data <= today);
+  if(clean){
+    return {label:"Da pulire", pill:"warn", next:`Pulizia: ${clean.data}`};
+  }
+  const next = upcomingForApp(app);
+  if(next) return {label:"Libero", pill:"ok", next:`Prossimo arrivo: ${next.checkin}`};
+  return {label:"Libero", pill:"ok", next:"Nessun evento in calendario"};
+}
+function renderDashboard(){
+  refreshAppNames();
+  updateTopIcons();
+  const today = todayISO();
+  const arrivi = state.prenotazioni.filter(p=>p.stato!=="annullata" && p.checkin===today);
+  const partenze = state.prenotazioni.filter(p=>p.stato!=="annullata" && p.checkout===today);
+
+  $("#kpiArrivi").textContent = arrivi.length;
+  $("#kpiPartenze").textContent = partenze.length;
+
+  // table status
+  const sA = statusForApp("A");
+  const sB = statusForApp("B");
+  $("#tblStati").innerHTML = `
+    <tr><td><strong>Appartamento 1 OpenSpace</strong></td><td><span class="pill ${sA.pill}">${sA.label}</span></td><td class="small muted">${escapeHtml(sA.next)}</td></tr>
+    <tr><td><strong>Appartamento 2 MyHome</strong></td><td><span class="pill ${sB.pill}">${sB.label}</span></td><td class="small muted">${escapeHtml(sB.next)}</td></tr>
+  `;
+
+  // lists
+  $("#dashArrivi").innerHTML = arrivi.length? arrivi.map(p => dashLine(p, "arrivo")).join("") : `<span class="muted">Nessun arrivo oggi.</span>`;
+  $("#dashPartenze").innerHTML = partenze.length? partenze.map(p => dashLine(p, "partenza")).join("") : `<span class="muted">Nessuna partenza oggi.</span>`;
+}
+
+function dashLine(p, type){
+  const st = pillForStatus(p.stato);
+  const when = type==="arrivo" ? (p.ora || settings.oraIn) : settings.oraOut;
+  return `
+    <div class="card" style="padding:10px; margin:8px 0; box-shadow:none">
+      <div class="row space">
+        <div>
+          <div><strong>${escapeHtml(fullName(p))}</strong> <span class="pill">${appName(p.app)}</span></div>
+          <div class="small muted">${type==="arrivo"?"Check-in":"Check-out"} • ore ${escapeHtml(when||"")}</div>
+        </div>
+        <div class="row">
+          ${st}
+          <button class="btn" onclick="openPreno('${p.id}')">Apri</button>
+          <button class="btn" onclick="waFromDash('${p.id}', type)">WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+window.openPreno = function(id){
+  const p = state.prenotazioni.find(x=>x.id===id);
+  if(!p) return;
+  showTab("prenotazioni");
+  setPrenoForm(p);
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+
+window.waFromDash = function(id, type){
+  const p = state.prenotazioni.find(x=>x.id===id);
+  if(!p) return;
+  if(!p.tel){ toast("Manca il telefono dell'ospite."); return; }
+  const msg = (type==="arrivo") ? buildMsg(settings.tplCheckin, p) : buildMsg(settings.tplCheckout, p);
+  openWAMessage(p.tel, msg);
+};
+
+$("#btnRefreshDash").addEventListener("click", renderDashboard);
+$("#btnBackupTop").addEventListener("click", ()=> showTab("impostazioni"));
+
+/* ===== Calendario ===== */
+let calYear, calMonth; // month 0-11
+function setCalTo(date){
+  calYear = date.getFullYear();
+  calMonth = date.getMonth();
+}
+setCalTo(new Date());
+
+function monthLabel(y,m){
+  const d = new Date(y,m,1);
+  return d.toLocaleDateString("it-IT", {month:"long", year:"numeric"});
+}
+function renderCalendario(){
+  $("#calLabel").textContent = monthLabel(calYear, calMonth);
+  const grid = $("#calGrid");
+  grid.innerHTML = "";
+
+  const dows = ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
+  for(const s of dows){
+    const el = document.createElement("div");
+    el.className = "dow";
+    el.textContent = s;
+    grid.appendChild(el);
+  }
+
+  const first = new Date(calYear, calMonth, 1);
+  // convert JS Sunday=0.. to Monday-based offset
+  const js = first.getDay(); // 0 sun
+  const offset = (js===0?6:js-1); // 0 for Monday
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+  // blanks
+  for(let i=0;i<offset;i++){
+    const blank = document.createElement("div");
+    blank.className = "day";
+    blank.style.visibility="hidden";
+    grid.appendChild(blank);
+  }
+
+  for(let day=1; day<=daysInMonth; day++){
+    const iso = toISO(calYear, calMonth, day);
+    const el = document.createElement("div");
+    el.className = "day";
+    el.innerHTML = `<div class="d">${day}</div><div class="mini" id="mini-${iso}"></div>`;
+    el.addEventListener("click", ()=> showDay(iso));
+    grid.appendChild(el);
+
+    // markers
+    const markers = buildMarkersForDay(iso);
+    $("#mini-"+iso).innerHTML = markers || `<span class="muted">—</span>`;
+  }
+
+  $("#calDayDetails").innerHTML = "";
+}
+
+function toISO(y,m,day){
+  const mm = String(m+1).padStart(2,"0");
+  const dd = String(day).padStart(2,"0");
+  return `${y}-${mm}-${dd}`;
+}
+
+function buildMarkersForDay(iso){
+  // iso is used only as key; comparisons are done by date
+  const dayDate = parseDateAny(iso);
+  const items = [];
+
+  for(const p of state.prenotazioni){
+    if(p.stato==="annullata") continue;
+    const ci = parseDateAny(p.checkin);
+    const co = parseDateAny(p.checkout);
+    if(!ci || !co || !dayDate) continue;
+
+    if(sameDay(ci, dayDate)){
+      items.push(`<div><span class="dot o"></span> Arrivo ${escapeHtml(p.app)} (${escapeHtml(fullName(p))})</div>`);
+    }
+    if(sameDay(co, dayDate)){
+      items.push(`<div><span class="dot b"></span> Partenza ${escapeHtml(p.app)} (${escapeHtml(fullName(p))})</div>`);
+    }
+    // occupied if day in [checkin, checkout)
+    const d = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
+    const s = new Date(ci.getFullYear(), ci.getMonth(), ci.getDate());
+    const e = new Date(co.getFullYear(), co.getMonth(), co.getDate());
+    if(d >= s && d < e){
+      items.push(`<div><span class="dot r"></span> Occupato ${escapeHtml(p.app)}</div>`);
+    }
+  }
+
+  for(const c of state.pulizie){
+    const cd = parseDateAny(c.data);
+    if(!cd || !dayDate) continue;
+    if(sameDay(cd, dayDate)){
+      items.push(`<div><span class="dot g"></span> Pulizia ${escapeHtml(c.app)} ${c.done?"(fatta)":"(da fare)"}</div>`);
+    }
+  }
+  return items;
+}
+
+function showDay(iso){
+  const dayDate = parseDateAny(iso);
+  const box = $("#dayBox");
+  box.innerHTML = "";
+  if(!dayDate){ box.innerHTML = `<div class="muted">Data non valida.</div>`; return; }
+
+  const title = document.createElement("div");
+  title.className = "row space";
+  title.innerHTML = `<strong>${escapeHtml(toDDMMYYYY(iso))}</strong><span class="muted small">Dettaglio giorno</span>`;
+  box.appendChild(title);
+
+  // prenotazioni del giorno
+  const list = document.createElement("div");
+  list.className = "mini";
+  const prs = (state.prenotazioni||[]).filter(p=>{
+    if(p.stato==="annullata") return false;
+    const ci = parseDateAny(p.checkin);
+    const co = parseDateAny(p.checkout);
+    if(!ci || !co) return false;
+    const d = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
+    const s = new Date(ci.getFullYear(), ci.getMonth(), ci.getDate());
+    const e = new Date(co.getFullYear(), co.getMonth(), co.getDate());
+    return (sameDay(ci, dayDate) || sameDay(co, dayDate) || (d>=s && d<e));
+  });
+
+  if(prs.length===0){
+    list.innerHTML = `<div class="muted">Nessuna prenotazione.</div>`;
+  }else{
+    list.innerHTML = prs.map(p=>`<div class="row space" style="gap:10px">
+      <div>
+        <div><strong>${escapeHtml(fullName(p))}</strong> <span class="pill">${escapeHtml(p.app)}</span></div>
+        <div class="muted small">${escapeHtml(p.checkin)} → ${escapeHtml(p.checkout)} (${diffDays(p.checkin,p.checkout)} notti)</div>
+      </div>
+      <button class="btn" onclick="try{editPrenotazioneById('${p.id}')}catch(e){}">Apri</button>
+    </div>`).join("");
+  }
+  box.appendChild(list);
+}
+
+$("#calPrev").addEventListener("click", ()=>{
+  const d = new Date(calYear, calMonth, 1);
+  d.setMonth(d.getMonth()-1);
+  setCalTo(d);
+  renderCalendario();
+});
+$("#calNext").addEventListener("click", ()=>{
+  const d = new Date(calYear, calMonth, 1);
+  d.setMonth(d.getMonth()+1);
+  setCalTo(d);
+  renderCalendario();
+});
+$("#calToday").addEventListener("click", ()=>{
+  setCalTo(new Date());
+  renderCalendario();
+});
+
+/* ===== Report ===== */
+function renderReport(){
+  // default month = current
+  if(!$("#repMonth").value){
+    const d = new Date();
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0");
+    $("#repMonth").value = `${y}-${m}`;
+  }
+  computeReport();
+}
+function computeReport(){
+  const val = $("#repMonth").value;
+  if(!val) return;
+  const [y, m1] = val.split("-").map(Number); // m1 1-12
+  const startD = new Date(y, m1-1, 1);
+  const endD = new Date(y, m1, 0); // last day
+  let inc = 0;
+  let nightsA=0, nightsB=0;
+
+  const addOverlapNights = (p, app)=>{
+    const ci = parseDateAny(p.checkin);
+    const co = parseDateAny(p.checkout);
+    if(!ci || !co) return 0;
+    // overlap interval [ci,co) with [startD, endD+1)
+    const s = (ci < startD) ? startD : ci;
+    const endPlus = new Date(endD.getFullYear(), endD.getMonth(), endD.getDate()+1);
+    const e = (co > endPlus) ? endPlus : co;
+    const ms = new Date(s.getFullYear(), s.getMonth(), s.getDate()).getTime();
+    const me = new Date(e.getFullYear(), e.getMonth(), e.getDate()).getTime();
+    const diff = Math.max(0, Math.round((me-ms)/(1000*60*60*24)));
+    if(app==="A") nightsA += diff;
+    if(app==="B") nightsB += diff;
+  };
+
+  for(const p of (state.prenotazioni||[])){
+    if(p.stato==="annullata") continue;
+    const ci = parseDateAny(p.checkin);
+    const co = parseDateAny(p.checkout);
+    if(!ci || !co) continue;
+    // overlaps month?
+    const endPlus = new Date(endD.getFullYear(), endD.getMonth(), endD.getDate()+1);
+    if(co <= startD || ci >= endPlus) continue;
+
+    inc += Number((p.totale ?? (Number(p.prezzo||0)+Number(p.tassa||0)+Number(p.pulizia||0)))||0);
+    addOverlapNights(p, p.app||"A");
+  }
+
+  $("#repIncassi").textContent = inc.toFixed(2) + " €";
+  $("#repNottiA").textContent = String(nightsA);
+  $("#repNottiB").textContent = String(nightsB);
+}
+function nextDay(iso){
+  const d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate()+1);
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), da=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${da}`;
+}
+$("#btnRefreshReport").addEventListener("click", computeReport);
+
+/* ===== Settings + Backup ===== */
+
+function renderContabilita(){
+  // default date range: mese corrente
+  if(!$("#accFrom").value && !$("#accTo").value){
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    $("#accFrom").value = `${y}-${m}-01`;
+    $("#accTo").value = todayISO();
+  }
+  $("#accIvaPerc").value = (settings.ivaPercDefault ?? 22);
+  $("#accVarie").value = (settings.accVarie ?? 0).toString().replace(".", ",");
+  $("#accApp").value = $("#accApp").value || "TUTTE";
+
+  computeContabilita();
+}
+
+
+function computeContabilita(){
+  const from = $("#accFrom").value;
+  const to = $("#accTo").value;
+  const app = $("#accApp").value;
+
+  const inRange = (p)=>{
+    const ci = p.checkin || "";
+    const co = p.checkout || "";
+    const okApp = (app==="TUTTE") ? true : (p.app===app);
+    const okFrom = !from || (co >= from); // checkout >= from
+    const okTo = !to || (ci <= to);       // checkin <= to
+    return okApp && okFrom && okTo;
+  };
+
+  const items = state.prenotazioni.filter(inRange);
+
+  const getTot = (p)=> Number(p.totale ?? (Number(p.prezzo||0)+Number(p.tassa||0)+Number(p.pulizia||0))) || 0;
+  const entrata = items.reduce((acc,p)=> acc + getTot(p), 0);
+  const tassaSogg = items.reduce((acc,p)=> acc + Number(p.tassa||0), 0);
+  const spesePulizie = items.reduce((acc,p)=> acc + Number(p.pulizia||0), 0);
+
+  const base = Math.max(0, entrata - tassaSogg);
+  const ivaPerc = Number($("#accIvaPerc").value||0);
+  settings.ivaPerc = ivaPerc;
+  const iva = base * (ivaPerc/100);
+
+  const varie = parseEuro($("#accVarie").value);
+  settings.accVarie = varie;
+
+  const netto = entrata - iva - spesePulizie - varie - tassaSogg;
+
+  $("#accEntrata").textContent = fmtEUR(entrata);
+  $("#accEntrata2").textContent = fmtEUR(entrata);
+  $("#accTassaSogg").textContent = fmtEUR(tassaSogg);
+  $("#accBase").textContent = fmtEUR(base);
+  $("#accIva").textContent = fmtEUR(iva);
+  $("#accIva2").textContent = fmtEUR(iva);
+  $("#accPulizie").textContent = fmtEUR(spesePulizie);
+  $("#accNetto").textContent = fmtEUR(netto);
+  $("#accNetto2").textContent = fmtEUR(netto);
+
+  // tabella riepilogo
+  $("#accCount").textContent = `${items.length} prenotazioni`;
+  const tbody = $("#accTable").querySelector("tbody");
+  tbody.innerHTML = items
+    .slice()
+    .sort((a,b)=> (a.checkin||"").localeCompare(b.checkin||""))
+    .map(p => {
+      const tot = getTot(p);
+      return `<tr>
+        <td>${escapeHtml(`${p.checkin} → ${p.checkout}`)}</td>
+        <td>${escapeHtml(fullName(p)||"")}</td>
+        <td>${escapeHtml(appName(p.app))}</td>
+        <td class="right">${escapeHtml(fmtEUR(tot))}</td>
+      </tr>`;
+    }).join("");
+
+  saveState(state);
+}
+
+$("#btnAccAggiorna").addEventListener("click", computeContabilita);
+$("#accIvaPerc").addEventListener("input", ()=>{ computeContabilita(); });
+$("#accVarie").addEventListener("input", ()=>{ computeContabilita(); });
+
+$("#btnAccExport").addEventListener("click", ()=>{
+  const from = $("#accFrom").value;
+  const to = $("#accTo").value;
+  const app = $("#accApp").value;
+
+  const inRange = (p)=>{
+    const ci = p.checkin || "";
+    const co = p.checkout || "";
+    const okApp = (app==="TUTTE") ? true : (p.app===app);
+    const okFrom = !from || (co >= from);
+    const okTo = !to || (ci <= to);
+    return okApp && okFrom && okTo;
+  };
+
+  const items = state.prenotazioni.filter(inRange);
+  const getTot = (p)=> Number(p.totale ?? (Number(p.prezzo||0)+Number(p.tassa||0)+Number(p.pulizia||0))) || 0;
+
+  const entrata = items.reduce((acc,p)=> acc + getTot(p), 0);
+  const tassaSogg = items.reduce((acc,p)=> acc + Number(p.tassa||0), 0);
+  const spesePulizie = items.reduce((acc,p)=> acc + Number(p.pulizia||0), 0);
+  const base = Math.max(0, entrata - tassaSogg);
+  const ivaPerc = Number($("#accIvaPerc").value||0);
+  const iva = base * (ivaPerc/100);
+  const varie = parseEuro($("#accVarie").value);
+  const netto = entrata - iva - spesePulizie - varie - tassaSogg;
+
+  const esc = (s)=> String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+
+  // Summary rows
+  const summaryHeaders = ["Periodo","App","Aliquota %","Entrata (€)","Tassa soggiorno (€)","Base imponibile (€)","IVA/Statale (€)","Spese pulizie (€)","Spese varie (€)","NETTO (€)","N. prenotazioni"];
+  const summaryRow = [
+    `${from||"—"} → ${to||"—"}`,
+    app,
+    String(ivaPerc),
+    entrata.toFixed(2),
+    tassaSogg.toFixed(2),
+    base.toFixed(2),
+    iva.toFixed(2),
+    spesePulizie.toFixed(2),
+    varie.toFixed(2),
+    netto.toFixed(2),
+    String(items.length)
+  ];
+
+  const detailHeaders = ["Periodo","Ospite","App","Prezzo (€)","Pulizia (€)","Tassa soggiorno (€)","Totale (€)"];
+  const detailRows = items
+    .slice()
+    .sort((a,b)=> (a.checkin||"").localeCompare(b.checkin||""))
+    .map(p => ([
+      `${p.checkin} → ${p.checkout}`,
+      fullName(p)||"",
+      appName(p.app),
+      String(p.prezzo??""),
+      String(p.pulizia??""),
+      String(p.tassa??""),
+      String(getTot(p).toFixed(2))
+    ]));
+
+  let table = "<table border='1' cellspacing='0' cellpadding='4'>";
+  table += "<tr>" + summaryHeaders.map(h=>`<th style="background:#f3f4f6">${esc(h)}</th>`).join("") + "</tr>";
+  table += "<tr>" + summaryRow.map(c=>`<td>${esc(c)}</td>`).join("") + "</tr>";
+  table += "<tr><td colspan='"+summaryHeaders.length+"'>&nbsp;</td></tr>";
+
+  table += "<tr>" + detailHeaders.map(h=>`<th style="background:#f3f4f6">${esc(h)}</th>`).join("") + "</tr>";
+  for(const r of detailRows){
+    table += "<tr>" + r.map(c=>`<td>${esc(c)}</td>`).join("") + "</tr>";
+  }
+  table += "</table>";
+
+  const html = `<!doctype html><html><head><meta charset="utf-8">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f5a2a">
+</head><body>${table}
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js")
+        .then(()=>console.log("SW OK"))
+        .catch((e)=>console.log("SW ERR", e));
+    });
+  }
+</script>
+
+<!-- HTTPS_REQUIRED_BANNER -->
+<div id="httpsWarn" style="display:none; position:fixed; left:10px; right:10px; bottom:10px; z-index:9999; background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:10px 12px; border-radius:10px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size:14px; box-shadow:0 6px 18px rgba(0,0,0,.12);">
+  <b>⚠️ Offline su iPhone/iPad:</b> per funzionare anche senza internet, l’app va installata da un link <b>HTTPS</b>.  
+  Se la apri da rete locale <b>http://</b>, iOS spesso blocca il salvataggio offline.
+</div>
+<script>
+(function(){
+  try{
+    if(location.protocol !== "https:" && location.hostname !== "localhost"){
+      document.getElementById("httpsWarn").style.display = "block";
+    }
+  }catch(e){}
+})();
+</script>
+
+</body></html>`;
+  downloadText(html, `contabilita-${todayISO()}.xls`, "application/vnd.ms-excel");
+  toast("Export contabilità creato.");
+});
+
+
+function renderSettings(){
+  $("#setNomeCasa").value = settings.nomeCasa || "Casa Vacanze - Gestione";
+  $("#setNomeA").value = settings.nomeA || "";
+  $("#setNomeB").value = settings.nomeB || "";
+  $("#setOraIn").value = settings.oraIn || "15:00";
+  $("#setOraOut").value = settings.oraOut || "10:00";
+  if($("#setIvaPerc")) $("#setIvaPerc").value = Number(settings.ivaPerc ?? 22);
+  if($("#setPuliziaDefault")) $("#setPuliziaDefault").value = Number(settings.puliziaDefault ?? 0);
+  $("#setEsenti").value = Number(settings.esenti||0);
+
+  $("#tplCheckin").value = settings.tplCheckin || "";
+  $("#tplCheckout").value = settings.tplCheckout || "";
+
+  // firma (già in HTML)
+}
+$("#btnSaveSettings").addEventListener("click", ()=>{
+  settings.nomeCasa = $("#setNomeCasa").value || "Casa Vacanze - Gestione";
+  settings.nomeA = $("#setNomeA").value || "";
+  settings.nomeB = $("#setNomeB").value || "";
+  settings.oraIn = $("#setOraIn").value || "15:00";
+  settings.oraOut = $("#setOraOut").value || "10:00";
+  settings.ivaPerc = Number($("#setIvaPerc").value||0);
+  settings.puliziaDefault = Number($("#setPuliziaDefault").value||0);
+  settings.esenti = Number($("#setEsenti").value||0);
+
+  settings.tplCheckin = $("#tplCheckin").value || "";
+  settings.tplCheckout = $("#tplCheckout").value || "";
+
+  saveSettings(settings);
+  toast("Impostazioni salvate.");
+  try{ renderDashboard(); }catch(e){}
+});
+
+function buildMsg(tpl, p){
+  return (tpl||"")
+    .replaceAll("{NOME}", fullName(p))
+    .replaceAll("{ORA_IN}", settings.oraIn||"")
+    .replaceAll("{ORA_OUT}", settings.oraOut||"")
+    .replaceAll("{APP}", appName(p.app));
+}
+
+function normalizePhoneIT(phone){
+  // Accetta +39..., 39..., 3..., spazi e trattini
+  let p = String(phone||"").trim();
+  if(!p) return "";
+  p = p.replaceAll(" ", "").replaceAll("-", "").replaceAll("(", "").replaceAll(")", "");
+  if(p.startsWith("+")) p = "+" + p.slice(1).replace(/\D/g,"");
+  else p = p.replace(/\D/g,"");
+  if(p.startsWith("+")) return p.slice(1);   // senza +
+  if(p.startsWith("39")) return p;
+  return "39" + p;                           // fallback Italia
+}
+
+function openWhatsApp(phone, message){
+  const num = normalizePhoneIT(phone);
+  if(!num){ toast("Telefono non valido."); return; }
+  const text = encodeURIComponent(String(message||""));
+  const url = `https://wa.me/${num}?text=${text}`;
+  window.open(url, "_blank");
+}
+
+function copyToClipboard(text){
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).catch(()=> fallbackCopy(text));
+  }else{
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text){
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position="fixed"; ta.style.left="-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand("copy");
+  ta.remove();
+}
+$("#btnCopyCheckin").addEventListener("click", ()=> { copyToClipboard($("#tplCheckin").value); toast("Copiato."); });
+$("#btnCopyCheckout").addEventListener("click", ()=> { copyToClipboard($("#tplCheckout").value); toast("Copiato."); });
+
+$("#btnBackup").addEventListener("click", ()=>{
+  const payload = { version:1, savedAt: new Date().toISOString(), state, settings };
+  downloadText(JSON.stringify(payload,null,2), `backup-casa-vacanze-${todayISO()}.json`, "application/json");
+  toast("Backup creato.");
+});
+
+$("#fileRestore").addEventListener("change", async (e)=>{
+  const f = e.target.files?.[0];
+  if(!f) return;
+  try{
+    const txt = await f.text();
+    const obj = JSON.parse(txt);
+    if(!obj.state) throw new Error("Backup non valido.");
+    state = obj.state;
+    settings = obj.settings || settings;
+    saveState(state);
+    saveSettings(settings);
+    toast("Ripristino completato.");
+    renderAll();
+  }catch(err){
+    console.error(err);
+    alert("Errore nel ripristino: " + err.message);
+  }finally{
+    e.target.value = "";
+  }
+});
+
+$("#btnResetAll").addEventListener("click", ()=>{
+  if(!confirm("Confermi cancellazione totale dati?")) return;
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(SETTINGS_KEY);
+  state = loadState();
+  settings = loadSettings();
+  toast("Dati cancellati.");
+  renderAll();
+});
+
+/* ===== Helpers ===== */
+function fullName(p){
+  return [p?.nome||"", p?.cognome||""].join(" ").trim();
+}
+
+function escapeHtml(s){
+  return String(s||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* ===== Init ===== */
+function renderAll(){
+  renderSettings();
+  renderDashboard();
+  renderPrenotazioni();
+  renderCalendario();
+  renderPulizie();
+  renderReport();
+}
+$("#btnBackupTop").addEventListener("click", ()=> showTab("impostazioni"));
+
+resetPrenoForm();
+renderAll();
+showTab("dashboard");
+
+
+function currentPreno(){
+  const id = $("#prenoId") ? $("#prenoId").value : "";
+  if(!id){ toast("Apri una prenotazione."); return null; }
+  return state.prenotazioni.find(x=>x.id===id) || null;
+}
+
+function buildWAText(template, p){
+  const appLabel = (p.app==='B') ? "Appartamento 2 MyHome" : "Appartamento 1 OpenSpace";
+  return String(template||"")
+    .replaceAll("{NOME}", fullName(p))
+    .replaceAll("{APP}", appLabel)
+    .replaceAll("{DATA_IN}", p.checkin||"")
+    .replaceAll("{DATA_OUT}", p.checkout||"")
+    .replaceAll("{ORA_IN}", settings.oraCheckin || "15:00")
+    .replaceAll("{ORA_OUT}", settings.oraCheckout || "10:00");
+}
+
+function openWAMessage(p, template){
+  const tel = (p.tel||"").replace(/\s+/g,"");
+  if(!tel){ toast("Inserisci il telefono del cliente."); return; }
+  const pre = buildWAText(template, p);
+
+  const overlay = document.createElement("div");
+  overlay.style.position="fixed";
+  overlay.style.inset="0";
+  overlay.style.background="rgba(0,0,0,.35)";
+  overlay.style.display="flex";
+  overlay.style.alignItems="center";
+  overlay.style.justifyContent="center";
+  overlay.style.zIndex="9999";
+
+  const card = document.createElement("div");
+  card.style.background="#fff";
+  card.style.width="min(720px, 92vw)";
+  card.style.borderRadius="14px";
+  card.style.boxShadow="0 10px 30px rgba(0,0,0,.25)";
+  card.style.padding="14px";
+
+  const head = document.createElement("div");
+  head.className="row space";
+  head.innerHTML = `<strong>Messaggio WhatsApp</strong><span class="muted small">${escapeHtml(fullName(p))}</span>`;
+
+  const ta = document.createElement("textarea");
+  ta.rows = 8;
+  ta.style.width="100%";
+  ta.value = pre;
+
+  const foot = document.createElement("div");
+  foot.className="row";
+  foot.style.justifyContent="flex-end";
+  foot.style.gap="10px";
+
+  const bCancel = document.createElement("button");
+  bCancel.className="btn";
+  bCancel.textContent="Annulla";
+  bCancel.onclick = ()=> overlay.remove();
+
+  const bOpen = document.createElement("button");
+  bOpen.className="btn primary";
+  bOpen.textContent="Apri WhatsApp";
+  bOpen.onclick = ()=>{
+    const text = encodeURIComponent(ta.value||"");
+    const url = `https://wa.me/${encodeURIComponent(tel.replace(/^\+/,""))}?text=${text}`;
+    window.open(url, "_blank");
+    overlay.remove();
+  };
+
+  foot.appendChild(bCancel); foot.appendChild(bOpen);
+  card.appendChild(head);
+  card.appendChild(ta);
+  card.appendChild(foot);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+  ta.focus();
+}
+
+function parseDateAny(s){
+  if(!s) return null;
+  s = String(s).trim();
+  let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m){
+    const d = Number(m[1]), mo = Number(m[2]) - 1, y = Number(m[3]);
+    return new Date(y, mo, d);
+  }
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m){
+    return new Date(Number(m[1]), Number(m[2])-1, Number(m[3]));
+  }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function toDDMMYYYY(s){
+  const d = parseDateAny(s);
+  if(!d) return (s||"");
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yy = d.getFullYear();
+  return `${dd}/${mm}/${yy}`;
+}
+function migrateAllDatesToIT(){
+  // prenotazioni
+  (state.prenotazioni||[]).forEach(p=>{
+    if(p.checkin) p.checkin = toDDMMYYYY(p.checkin);
+    if(p.checkout) p.checkout = toDDMMYYYY(p.checkout);
+  });
+  // pulizie
+  (state.pulizie||[]).forEach(c=>{
+    if(c.data) c.data = toDDMMYYYY(c.data);
+  });
+  saveState(state);
+}
+
+
+function sameDay(a,b){
+  return a && b && a.getFullYear()==b.getFullYear() && a.getMonth()==b.getMonth() && a.getDate()==b.getDate();
+}
+function addDays(d, n){
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  x.setDate(x.getDate()+n);
+  return x;
+}
+function monthLabelPlanning(d){
+  const mesi = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+  return `${mesi[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ===== STEP 1: KPI OGGI/DOMANI + PLANNING (date: dd/mm/yyyy) =====
+let planningCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+function bookingsForApp(code){
+  return (state.prenotazioni||[]).filter(p => (p.app||"A")===code && p.stato!=="annullata");
+}
+function isOccupiedOnDay(p, day){ return isOccupiedRange(p.checkin, p.checkout, day); }
+function findBookingOnDay(app, day){
+  const arr = bookingsForApp(app);
+  return arr.find(p => isOccupiedOnDay(p, day)) || null;
+}
+function hasCleaningOnDay(app, day){
+  const arr = (state.pulizie||[]).filter(c => (c.app||"A")===app && !c.done);
+  return arr.some(c => {
+    const cd = parseDateAny(c.data);
+    return cd ? sameDay(cd, day) : false;
+  });
+}
+
+function renderKPI(){
+  const today = new Date();
+  const domani = addDays(today, 1);
+
+  const arriviO = (state.prenotazioni||[]).filter(p => sameDay(parseDateAny(p.checkin), today) && p.stato!=="annullata").length;
+  const partenzeO = (state.prenotazioni||[]).filter(p => sameDay(parseDateAny(p.checkout), today) && p.stato!=="annullata").length;
+  const pulizieO = (state.pulizie||[]).filter(c => !c.done && sameDay(parseDateAny(c.data), today)).length;
+
+  const arriviD = (state.prenotazioni||[]).filter(p => sameDay(parseDateAny(p.checkin), domani) && p.stato!=="annullata").length;
+  const partenzeD = (state.prenotazioni||[]).filter(p => sameDay(parseDateAny(p.checkout), domani) && p.stato!=="annullata").length;
+  const pulizieD = (state.pulizie||[]).filter(c => !c.done && sameDay(parseDateAny(c.data), domani)).length;
+
+  if($("#kpiOggiArrivi")) $("#kpiOggiArrivi strong").textContent = arriviO;
+  if($("#kpiOggiPartenze")) $("#kpiOggiPartenze strong").textContent = partenzeO;
+  if($("#kpiOggiPulizie")) $("#kpiOggiPulizie strong").textContent = pulizieO;
+
+  if($("#kpiDomaniArrivi")) $("#kpiDomaniArrivi strong").textContent = arriviD;
+  if($("#kpiDomaniPartenze")) $("#kpiDomaniPartenze strong").textContent = partenzeD;
+  if($("#kpiDomaniPulizie")) $("#kpiDomaniPulizie strong").textContent = pulizieD;
+}
+
+function renderPlanning(){
+  const first = new Date(planningCursor.getFullYear(), planningCursor.getMonth(), 1);
+  const daysInMonth = new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
+  if($("#plLabel")) $("#plLabel").textContent = monthLabelPlanning(first);
+
+  const table = $("#plTable");
+  if(!table) return;
+
+  const days = [];
+  for(let d=1; d<=daysInMonth; d++){
+    days.push(new Date(first.getFullYear(), first.getMonth(), d));
+  }
+
+  const apps = [
+    {code:"A", label: "Appartamento 1 OpenSpace"},
+    {code:"B", label: "Appartamento 2 MyHome"},
+  ];
+
+  let thead = `<tr><th class="day sticky">Appartamento</th>` + days.map(d=>`<th class="day">${d.getDate()}</th>`).join("") + `</tr>`;
+  let rows = apps.map(a=>{
+    let tds = days.map(day=>{
+      const booking = findBookingOnDay(a.code, day);
+      const clean = hasCleaningOnDay(a.code, day);
+      let cls = "cell-free";
+      let title = "Libero";
+      let click = "";
+      if(clean){
+        cls = "cell-clean";
+        title = "Pulizia (non fatta)";
+      }
+      if(booking){
+        cls = "cell-occ";
+        title = `Occupato: ${fullName(booking)} (${booking.checkin} → ${booking.checkout})`;
+        click = ` data-preno="${booking.id}"`;
+      }
+      return `<td class="${cls}" title="${escapeHtml(title)}"${click}></td>`;
+    }).join("");
+    return `<tr><th class="sticky">${escapeHtml(a.label)}</th>${tds}</tr>`;
+  }).join("");
+
+  table.innerHTML = thead + rows;
+
+  table.querySelectorAll("td[data-preno]").forEach(td=>{
+    td.style.cursor="pointer";
+    td.addEventListener("click", ()=>{
+      const id = td.getAttribute("data-preno");
+      showTab("prenotazioni");
+      try{
+        openPrenotazioneById(id);
+      }catch(e){
+        const p = (state.prenotazioni||[]).find(x=>x.id===id);
+        if(p){ try{ editPrenotazione(p); }catch(e2){} }
+      }
+    });
+  });
+}
+
+function wirePlanning(){
+  if($("#plPrev")) $("#plPrev").onclick = ()=>{ planningCursor = new Date(planningCursor.getFullYear(), planningCursor.getMonth()-1, 1); renderPlanning(); };
+  if($("#plNext")) $("#plNext").onclick = ()=>{ planningCursor = new Date(planningCursor.getFullYear(), planningCursor.getMonth()+1, 1); renderPlanning(); };
+  if($("#plOggi")) $("#plOggi").onclick = ()=>{ const n=new Date(); planningCursor = new Date(n.getFullYear(), n.getMonth(), 1); renderPlanning(); };
+}
+wirePlanning();
+
+const _oldRenderDashboard = (typeof renderDashboard==="function") ? renderDashboard : null;
+if(_oldRenderDashboard){
+  renderDashboard = function(){
+    _oldRenderDashboard();
+    try{ renderKPI(); }catch(e){}
+  }
+}
+const _oldRenderPulizie = (typeof renderPulizie==="function") ? renderPulizie : null;
+if(_oldRenderPulizie){
+  renderPulizie = function(){
+    _oldRenderPulizie();
+    try{ renderPlanning(); }catch(e){}
+    try{ renderKPI(); }catch(e){}
+  }
+}
+const _oldRenderPrenotazioni = (typeof renderPrenotazioni==="function") ? renderPrenotazioni : null;
+if(_oldRenderPrenotazioni){
+  renderPrenotazioni = function(){
+    _oldRenderPrenotazioni();
+    try{ renderPlanning(); }catch(e){}
+    try{ renderKPI(); }catch(e){}
+  }
+}
+
+document.querySelectorAll('[data-tab="planning"]').forEach(btn=>{
+  btn.addEventListener("click", ()=>{ try{ renderPlanning(); }catch(e){} });
+});
+
+try{ renderKPI(); }catch(e){}
+try{ renderPlanning(); }catch(e){}
+
+
+function editPrenotazioneById(id){
+  const p = (state.prenotazioni||[]).find(x=>x.id===id);
+  if(!p) return;
+  try{ editPrenotazione(p); }catch(e){}
+}
+
+function printCurrentView(){ window.print(); }
+
+// ===== STAMPA (NUOVA FINESTRA - SUPER COMPATIBILE) =====
+function printSectionNewWindow(tabName, titolo){
+  const el = document.getElementById("tab-"+tabName);
+  if(!el){ toast("Sezione non trovata"); return; }
+
+  // copia CSS principali dalla pagina (stili base)
+  const css = Array.from(document.querySelectorAll("style"))
+    .map(s=>s.innerHTML).join("\n");
+
+  const w = window.open("", "_blank");
+  if(!w){ alert("Popup bloccato: abilita i popup per stampare."); return; }
+
+  w.document.open();
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8">
+    <title>${titolo||"Stampa"}</title>
+    <style>${css}
+      /* pulizia stampa */
+      .topbar,.tabs,button,.btn,input,select,textarea,.no-print{display:none !important;}
+      body{background:#fff !important;}
+      .planning-wrap{overflow:visible !important;}
+      .planning-table{width:100% !important;}
+    </style>
+  
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f5a2a">
+</head><body>
+    <h2 style="margin:0 0 10px 0">${titolo||""}</h2>
+    ${el.outerHTML}
+    <script>window.onload=function(){ setTimeout(()=>{ window.print(); }, 200); }<\/script>
+  
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js")
+        .then(()=>console.log("SW OK"))
+        .catch((e)=>console.log("SW ERR", e));
+    });
+  }
+</script>
+
+<!-- HTTPS_REQUIRED_BANNER -->
+<div id="httpsWarn" style="display:none; position:fixed; left:10px; right:10px; bottom:10px; z-index:9999; background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:10px 12px; border-radius:10px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size:14px; box-shadow:0 6px 18px rgba(0,0,0,.12);">
+  <b>⚠️ Offline su iPhone/iPad:</b> per funzionare anche senza internet, l’app va installata da un link <b>HTTPS</b>.  
+  Se la apri da rete locale <b>http://</b>, iOS spesso blocca il salvataggio offline.
+</div>
+<script>
+(function(){
+  try{
+    if(location.protocol !== "https:" && location.hostname !== "localhost"){
+      document.getElementById("httpsWarn").style.display = "block";
+    }
+  }catch(e){}
+})();
+</script>
+
+</body></html>`);
+  w.document.close();
+}
+
+// helper: attach click safely
+function bindPrint(btnId, tabName, title){
+  const b = document.getElementById(btnId);
+  if(!b) return;
+  b.type = "button";
+  b.addEventListener("click", ()=> printSectionNewWindow(tabName, title));
+}
+bindPrint("btnPrintCalendario","calendario","Calendario");
+bindPrint("btnPrintPlanning","planning","Planning");
+bindPrint("btnPrintContabilita","contabilita","Contabilità");
+bindPrint("btnPrintReport","report","Report");
+
+function isOccupiedRange(checkinStr, checkoutStr, dayDate){
+  const ci = parseDateAny(checkinStr);
+  const co = parseDateAny(checkoutStr);
+  if(!ci || !co) return false;
+  const start = new Date(ci.getFullYear(), ci.getMonth(), ci.getDate());
+  const end = new Date(co.getFullYear(), co.getMonth(), co.getDate());
+  const d = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
+  return d >= start && d < end; // checkout day not occupied
+}
+
+function downloadTextFile(filename, mime, text){
+  const blob = new Blob([text], {type: mime});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+}
+function csvEscape(v){
+  const s = String(v ?? "");
+  if(/[",\n;]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+  return s;
+}
+function exportPlanningExcel(){
+  // exports a month grid as CSV (one row per apt, one column per day)
+  const first = new Date(planningCursor.getFullYear(), planningCursor.getMonth(), 1);
+  const daysInMonth = new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
+  const header = ["Appartamento"];
+  for(let d=1; d<=daysInMonth; d++) header.push(String(d));
+  const rows = [header];
+
+  const apps = [
+    {code:"A", label:"Appartamento 1 OpenSpace"},
+    {code:"B", label:"Appartamento 2 MyHome"},
+  ];
+
+  for(const a of apps){
+    const r = [a.label];
+    for(let d=1; d<=daysInMonth; d++){
+      const day = new Date(first.getFullYear(), first.getMonth(), d);
+      const booking = (state.prenotazioni||[]).find(p => (p.app||"A")===a.code && p.stato!=="annullata" && isOccupiedRange(p.checkin,p.checkout,day));
+      const clean = (state.pulizie||[]).find(c => (c.app||"A")===a.code && !c.done && parseDateAny(c.data) && parseDateAny(c.data).getFullYear()==day.getFullYear() && parseDateAny(c.data).getMonth()==day.getMonth() && parseDateAny(c.data).getDate()==day.getDate());
+      if(booking) r.push("OCCUPATO");
+      else if(clean) r.push("PULIZIA");
+      else r.push("LIBERO");
+    }
+    rows.push(r);
+  }
+
+  const csv = rows.map(r=>r.map(csvEscape).join(";")).join("\n");
+  const mm = String(first.getMonth()+1).padStart(2,"0");
+  downloadTextFile(`planning_${first.getFullYear()}_${mm}.csv`, "text/csv;charset=utf-8", csv);
+}
+
+function exportContabilitaExcel2(){
+  const rows = [["Data","Appartamento","Ospite","Notti","Entrata","IVA%","IVA","Pulizia","Spese varie","Tassa soggiorno","Netto"]];
+  for(const p of (state.prenotazioni||[])){
+    if(p.stato==="annullata") continue;
+    const ci = parseDateAny(p.checkin);
+    const co = parseDateAny(p.checkout);
+    let nights = 0;
+    if(ci && co){
+      const start = new Date(ci.getFullYear(), ci.getMonth(), ci.getDate());
+      const end = new Date(co.getFullYear(), co.getMonth(), co.getDate());
+      nights = Math.max(0, Math.round((end-start)/(1000*60*60*24)));
+    }
+    const entrata = Number(p.prezzo||0);
+    const ivaPerc = Number((p.ivaPerc ?? settings.ivaPerc) || 0);
+    const iva = entrata * ivaPerc/100;
+    const pul = Number(p.pulizia||0);
+    const sp = Number(p.speseVarie||0);
+    const tass = Number(p.tassa||0);
+    const netto = entrata - iva - pul - sp; // tassa soggiorno a parte
+    rows.push([
+      p.checkin||"",
+      (p.app==="B"?"Appartamento 2 MyHome":"Appartamento 1 OpenSpace"),
+      fullName(p),
+      nights,
+      entrata.toFixed(2),
+      ivaPerc,
+      iva.toFixed(2),
+      pul.toFixed(2),
+      sp.toFixed(2),
+      tass.toFixed(2),
+      netto.toFixed(2),
+    ]);
+  }
+  const csv = rows.map(r=>r.map(csvEscape).join(";")).join("\n");
+  downloadTextFile("contabilita.csv","text/csv;charset=utf-8",csv);
+}
+function exportReportExcel2(){
+  // export current report month summary
+  const val = document.getElementById("repMonth")?.value || "";
+  const inc = document.getElementById("repIncassi")?.textContent || "";
+  const na = document.getElementById("repNottiA")?.textContent || "";
+  const nb = document.getElementById("repNottiB")?.textContent || "";
+  const csv = ["Mese;Incassi;Notti OpenSpace;Notti MyHome", `${csvEscape(val)};${csvEscape(inc)};${csvEscape(na)};${csvEscape(nb)}`].join("\n");
+  downloadTextFile("report.csv","text/csv;charset=utf-8",csv);
+}
+function exportCalendarioExcel2(){
+  // export bookings list for current calendar month if available in inputs (fallback: all)
+  const csvRows = [["Appartamento","Ospite","Check-in","Check-out","Telefono","Totale"]];
+  for(const p of (state.prenotazioni||[])){
+    if(p.stato==="annullata") continue;
+    csvRows.push([
+      (p.app==="B"?"Appartamento 2 MyHome":"Appartamento 1 OpenSpace"),
+      fullName(p),
+      p.checkin||"",
+      p.checkout||"",
+      p.tel||"",
+      Number(p.totale||0).toFixed(2)
+    ]);
+  }
+  const csv = csvRows.map(r=>r.map(csvEscape).join(";")).join("\n");
+  downloadTextFile("calendario_prenotazioni.csv","text/csv;charset=utf-8",csv);
+}
+
+// ===== STAMPA (solo sezione) =====
+function printTab(tabName){
+  // ensure content rendered
+  try{
+    if(tabName==="calendario" && typeof renderCalendario==="function") renderCalendario();
+    if(tabName==="planning" && typeof renderPlanning==="function") renderPlanning();
+    if(tabName==="contabilita" && typeof renderContabilita==="function") renderContabilita();
+    if(tabName==="report" && typeof renderReport==="function") renderReport();
+  }catch(e){}
+
+  const src = document.getElementById("tab-"+tabName);
+  if(!src){ toast("Sezione non trovata."); return; }
+
+  const clone = src.cloneNode(true);
+  // remove interactive elements in print
+  clone.querySelectorAll("button, input, textarea, select").forEach(el=>el.remove());
+
+  // expand scroll areas
+  clone.querySelectorAll(".planning-wrap").forEach(el=>{
+    el.style.overflow="visible";
+    el.style.maxHeight="none";
+    el.style.height="auto";
+  });
+
+  const css = `
+    @page{ size: A4 landscape; margin: 10mm; }
+    body{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#111; }
+    h2{ margin:0; }
+    .header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;}
+    .logo{height:42px;}
+    .meta{font-size:12px; color:#555;}
+    table{border-collapse:collapse; width:100%;}
+    th,td{border:1px solid #ddd; padding:6px; font-size:12px;}
+    /* disable sticky in print */
+    .planning-table th.sticky, .planning-table td.sticky{position:static !important;}
+    .planning-table th.day{position:static !important;}
+  `;
+
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2,"0");
+  const mm = String(now.getMonth()+1).padStart(2,"0");
+  const yy = now.getFullYear();
+  const ts = `${dd}/${mm}/${yy}`;
+
+  const title = (tabName==="calendario")?"Calendario":
+                (tabName==="planning")?"Planning":
+                (tabName==="contabilita")?"Contabilità":
+                (tabName==="report")?"Report":"Stampa";
+
+  const htmlDoc = `
+<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
+<style>${css}</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f5a2a">
+</head>
+<body>
+  <div class="header">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <img class="logo" src="logo.jpg" alt="logo" />
+      <div>
+        <h2>${title}</h2>
+        <div class="meta">Data stampa: ${ts}</div>
+      </div>
+    </div>
+  </div>
+  <div id="content"></div>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js")
+        .then(()=>console.log("SW OK"))
+        .catch((e)=>console.log("SW ERR", e));
+    });
+  }
+</script>
+
+<!-- HTTPS_REQUIRED_BANNER -->
+<div id="httpsWarn" style="display:none; position:fixed; left:10px; right:10px; bottom:10px; z-index:9999; background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:10px 12px; border-radius:10px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size:14px; box-shadow:0 6px 18px rgba(0,0,0,.12);">
+  <b>⚠️ Offline su iPhone/iPad:</b> per funzionare anche senza internet, l’app va installata da un link <b>HTTPS</b>.  
+  Se la apri da rete locale <b>http://</b>, iOS spesso blocca il salvataggio offline.
+</div>
+<script>
+(function(){
+  try{
+    if(location.protocol !== "https:" && location.hostname !== "localhost"){
+      document.getElementById("httpsWarn").style.display = "block";
+    }
+  }catch(e){}
+})();
+</script>
+
+</body></html>`;
+
+  let iframe = document.getElementById("printFrame");
+  if(!iframe){
+    iframe = document.createElement("iframe");
+    iframe.id = "printFrame";
+    iframe.style.position="fixed";
+    iframe.style.right="0";
+    iframe.style.bottom="0";
+    iframe.style.width="0";
+    iframe.style.height="0";
+    iframe.style.border="0";
+    document.body.appendChild(iframe);
+  }
+
+  const doc = iframe.contentWindow.document;
+  doc.open(); doc.write(htmlDoc); doc.close();
+
+  const mount = ()=> {
+    try{
+      const c = doc.getElementById("content");
+      c.innerHTML = "";
+      c.appendChild(doc.importNode(clone, true));
+      const img = doc.querySelector("img.logo");
+      const go = ()=>{ iframe.contentWindow.focus(); iframe.contentWindow.print(); };
+      if(img && !img.complete){ img.onload = go; img.onerror = go; }
+      else go();
+    }catch(e){
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    }
+  };
+  setTimeout(mount, 80);
+}
+
+
+// ===== MIGRAZIONE DATE (GG/MM/AAAA -> YYYY-MM-DD) =====
+function isITDate(s){ return typeof s==="string" && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s.trim()); }
+function itToISO(s){
+  const m = s.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(!m) return s;
+  const dd = m[1].padStart(2,"0");
+  const mm = m[2].padStart(2,"0");
+  const yy = m[3];
+  return `${yy}-${mm}-${dd}`;
+}
+function migrateDatesIfNeeded(){
+  let changed = false;
+  try{
+    for(const p of (state.prenotazioni||[])){
+      if(isITDate(p.checkin)){ p.checkin = itToISO(p.checkin); changed = true; }
+      if(isITDate(p.checkout)){ p.checkout = itToISO(p.checkout); changed = true; }
+    }
+    for(const c of (state.pulizie||[])){
+      if(isITDate(c.data)){ c.data = itToISO(c.data); changed = true; }
+    }
+  }catch(e){}
+  if(changed){
+    try{ saveState(state); }catch(e){}
+  }
+}
+
+// ===== REFRESH STABILE =====
+function rerenderAll(){
+  try{ if(typeof renderDashboard==="function") renderDashboard(); }catch(e){}
+  try{ if(typeof renderPrenotazioni==="function") renderPrenotazioni(); }catch(e){}
+  try{ if(typeof renderCalendario==="function") renderCalendario(); }catch(e){}
+  try{ if(typeof renderPlanning==="function") renderPlanning(); }catch(e){}
+  try{ if(typeof renderPulizie==="function") renderPulizie(); }catch(e){}
+  try{ if(typeof renderReport==="function") renderReport(); }catch(e){}
+  try{ if(typeof renderContabilita==="function") renderContabilita(); }catch(e){}
+}
+document.addEventListener("DOMContentLoaded", ()=>{
+  migrateDatesIfNeeded();
+  // render current tab content after migration
+  setTimeout(()=>{ try{ rerenderAll(); }catch(e){} }, 50);
+});
+
+
+
+// ===== FIX WHATSAPP BOTTONI (delegation) =====
+document.addEventListener("click", (ev)=>{
+  const t = ev.target;
+  if(!t) return;
+
+  const bMsg = t.closest && t.closest("button[data-msg]");
+  if(bMsg){
+    ev.preventDefault();
+    const id = bMsg.getAttribute("data-msg");
+    const p = (state.prenotazioni||[]).find(x=>x.id===id);
+    if(!p){ toast("Prenotazione non trovata."); return; }
+    openWAMessage(p, ""); // chat vuota
+    return;
+  }
+
+  const bIn = t.closest && t.closest("button[data-wa-in]");
+  if(bIn){
+    ev.preventDefault();
+    const id = bIn.getAttribute("data-wa-in");
+    const p = (state.prenotazioni||[]).find(x=>x.id===id);
+    if(!p){ toast("Prenotazione non trovata."); return; }
+    const msg = buildMsg(settings.tplCheckin, p);
+    openWAMessage(p, msg);
+    return;
+  }
+
+  const bOut = t.closest && t.closest("button[data-wa-out]");
+  if(bOut){
+    ev.preventDefault();
+    const id = bOut.getAttribute("data-wa-out");
+    const p = (state.prenotazioni||[]).find(x=>x.id===id);
+    if(!p){ toast("Prenotazione non trovata."); return; }
+    const msg = buildMsg(settings.tplCheckout, p);
+    openWAMessage(p, msg);
+    return;
+  }
+});
+
+</script>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js")
+        .then(()=>console.log("SW OK"))
+        .catch((e)=>console.log("SW ERR", e));
+    });
+  }
+</script>
+
+<!-- HTTPS_REQUIRED_BANNER -->
+<div id="httpsWarn" style="display:none; position:fixed; left:10px; right:10px; bottom:10px; z-index:9999; background:#fff3cd; border:1px solid #ffeeba; color:#856404; padding:10px 12px; border-radius:10px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; font-size:14px; box-shadow:0 6px 18px rgba(0,0,0,.12);">
+  <b>⚠️ Offline su iPhone/iPad:</b> per funzionare anche senza internet, l’app va installata da un link <b>HTTPS</b>.  
+  Se la apri da rete locale <b>http://</b>, iOS spesso blocca il salvataggio offline.
+</div>
+<script>
+(function(){
+  try{
+    if(location.protocol !== "https:" && location.hostname !== "localhost"){
+      document.getElementById("httpsWarn").style.display = "block";
+    }
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
