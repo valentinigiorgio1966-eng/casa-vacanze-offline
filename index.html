@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Casa Vacanze - Gestione (Standalone)</title>
+  <meta name="theme-color" content="#2e7d32" />
+  <style>
+    :root{
+      --green:#2e7d32;
+      --green2:#1b5e20;
+      --bg:#f5f7f8;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --danger:#b91c1c;
+      --warn:#b45309;
+      --ok:#166534;
+      --shadow: 0 10px 20px rgba(0,0,0,.06);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg); color:var(--text);
+    }
+    header{
+      position:sticky; top:0; z-index:5;
+      background:linear-gradient(90deg,var(--green2),var(--green));
+      color:white; padding:14px 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.12);
+    }
+    header .row{display:flex; align-items:center; gap:12px; justify-content:space-between}
+    header h1{font-size:16px; margin:0; letter-spacing:.2px}
+    header .badge{font-size:12px; opacity:.9}
+    main{padding:16px; max-width:1100px; margin:0 auto}
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin:12px 0 16px;
+    }
+    .tabbtn{
+      border:1px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.12);
+      color:white;
+      padding:9px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:13px;
+      user-select:none;
+    }
+    .tabbtn.active{background:white; color:var(--green2); border-color:white}
+    .grid{display:grid; gap:14px}
+    @media(min-width:900px){ .grid.cols2{grid-template-columns: 1fr 1fr} }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+    .card h2{margin:0 0 10px; font-size:15px}
+    .muted{color:var(--muted)}
+    .kpi{display:flex; align-items:baseline; gap:10px}
+    .kpi .n{font-size:28px; font-weight:700}
+    .kpi .l{font-size:12px; color:var(--muted)}
+    .btn{
+      border:1px solid var(--border);
+      background:white;
+      padding:9px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .btn.primary{
+      background:var(--green);
+      border-color:var(--green);
+      color:white;
+    }
+    .btn.danger{background:var(--danger); border-color:var(--danger); color:white}
+    .btn.warn{background:var(--warn); border-color:var(--warn); color:white}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .row.space{justify-content:space-between}
+    input, select, textarea{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px 10px;
+      font-size:13px;
+      background:white;
+      outline:none;
+    }
+    textarea{min-height:80px; resize:vertical}
+    label{font-size:12px; color:var(--muted)}
+    .form{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    @media(min-width:900px){
+      .form.cols2{grid-template-columns: 1fr 1fr}
+      .form.cols3{grid-template-columns: 1fr 1fr 1fr}
+    }
+    .table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid var(--border);
+      border-radius:12px;
+    }
+    .table th, .table td{
+      padding:10px;
+      border-bottom:1px solid var(--border);
+      font-size:13px;
+      text-align:left;
+      vertical-align:top;
+    }
+    .table th{background:#f9fafb; font-weight:600}
+    .table tr:last-child td{border-bottom:none}
+    .pill{
+      display:inline-flex;
+      padding:3px 9px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid var(--border);
+      background:#f9fafb;
+      gap:6px;
+      align-items:center;
+      white-space:nowrap;
+    }
+    .pill.ok{border-color:#bbf7d0; background:#ecfdf5; color:var(--ok)}
+    .pill.warn{border-color:#fde68a; background:#fffbeb; color:var(--warn)}
+    .pill.danger{border-color:#fecaca; background:#fef2f2; color:var(--danger)}
+    .split{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    @media(min-width:1000px){ .split{grid-template-columns: 420px 1fr} }
+    .hidden{display:none !important}
+    .cal{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:8px;
+    }
+    .cal .dow{
+      font-size:11px; color:var(--muted); text-align:center;
+      padding:6px 0;
+    }
+    .day{
+      background:white;
+      border:1px solid var(--border);
+      border-radius:12px;
+      min-height:86px;
+      padding:8px;
+      cursor:pointer;
+      position:relative;
+    }
+    .day .d{font-size:12px; color:var(--muted)}
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      display:inline-block; margin-right:4px;
+    }
+    .dot.r{background:#ef4444}
+    .dot.o{background:#f59e0b}
+    .dot.g{background:#22c55e}
+    .dot.b{background:#3b82f6}
+    .mini{font-size:11px; margin-top:6px}
+    .toast{
+      position:fixed; bottom:14px; left:50%;
+      transform:translateX(-50%);
+      background:#111827;
+      color:white;
+      padding:10px 12px;
+      border-radius:12px;
+      box-shadow:0 12px 30px rgba(0,0,0,.25);
+      font-size:13px;
+      max-width:90vw;
+      display:none;
+      z-index:50;
+    }
+    .hr{height:1px; background:var(--border); margin:12px 0}
+    .small{font-size:12px}
+    .right{text-align:right}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+  </style>
+
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0f5a28">
+<link rel="apple-touch-icon" href="./icons/icon-192x192.png">
+
+</head>
+<body>
+<header>
+  <div class="row">
+    <div>
+      <h1 id="titleApp">Casa Vacanze - Gestione</h1>
+      <div class="badge" id="subtitleApp">Standalone • funziona aprendo index.html</div>
+    </div>
+    <div class="row">
+      <span class="pill" style="border-color:rgba(255,255,255,.35); background:rgba(255,255,255,.12); color:#fff">
+        <span class="dot g"></span> App A
+      </span>
+      <span class="pill" style="border-color:rgba(255,255,255,.35); background:rgba(255,255,255,.12); color:#fff">
+        <span class="dot b"></span> App B
+      </span>
+    </div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Sezioni">
+    <button class="tabbtn active" data-tab="dashboard">Dashboard</button>
+    <button class="tabbtn" data-tab="prenotazioni">Prenotazioni</button>
+    <button class="tabbtn" data-tab="calendario">Calendario</button>
+    <button class="tabbtn" data-tab="pulizie">Pulizie</button>
+    <button class="tabbtn" data-tab="report">Report</button>
+    <button class="tabbtn" data-tab="impostazioni">Impostazioni</button>
+  </div>
+</header>
+
+<main>
+  <!-- DASHBOARD -->
+  <section id="tab-dashboard" class="tabpanel">
+    <div class="grid cols2">
+      <div class="card">
+        <h2>Oggi</h2>
+        <div class="grid">
+          <div class="kpi"><div class="n" id="kpiArrivi">0</div><div class="l">Arrivi oggi</div></div>
+          <div class="kpi"><div class="n" id="kpiPartenze">0</div><div class="l">Partenze oggi</div></div>
+          <div class="row">
+            <button class="btn primary" id="btnNuovaPrenoTop">+ Nuova prenotazione</button>
+            <button class="btn" id="btnBackupTop">Backup</button>
+          </div>
+          <div class="small muted">Suggerimento: da “Prenotazioni” puoi segnare check-in / check-out e creare pulizie.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Stato appartamenti</h2>
+        <table class="table">
+          <thead><tr><th>Appartamento</th><th>Stato</th><th>Prossimo evento</th></tr></thead>
+          <tbody id="tblStati"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="row space">
+        <h2 style="margin:0">Arrivi / Partenze di oggi</h2>
+        <div class="row">
+          <button class="btn" id="btnRefreshDash">Aggiorna</button>
+        </div>
+      </div>
+      <div class="hr"></div>
+      <div class="grid cols2">
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px">Arrivi</h2>
+          <div id="dashArrivi" class="small muted">Nessun arrivo oggi.</div>
+        </div>
+        <div>
+          <h2 style="font-size:14px;margin:0 0 8px">Partenze</h2>
+          <div id="dashPartenze" class="small muted">Nessuna partenza oggi.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRENOTAZIONI -->
+  <section id="tab-prenotazioni" class="tabpanel hidden">
+    <div class="split">
+      <div class="card">
+        <div class="row space">
+          <h2 style="margin:0">Nuova / Modifica</h2>
+          <button class="btn" id="btnResetForm">Svuota</button>
+        </div>
+        <div class="hr"></div>
+
+        <form id="formPreno" class="form cols2" autocomplete="off">
+          <input type="hidden" id="prenoId" />
+          <div>
+            <label>Appartamento</label>
+            <select id="prenoApp">
+              <option value="A">Appartamento A</option>
+              <option value="B">Appartamento B</option>
+            </select>
+          </div>
+          <div>
+            <label>Canale</label>
+            <select id="prenoCanale">
+              <option>Airbnb</option>
+              <option>Booking</option>
+              <option>Diretto</option>
+              <option>Altro</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Nome ospite</label>
+            <input id="prenoNome" placeholder="Es. Mario Rossi" />
+          </div>
+          <div>
+            <label>Telefono</label>
+            <input id="prenoTel" placeholder="+39 ..." />
+          </div>
+
+          <div>
+            <label>Check-in (data)</label>
+            <input id="prenoIn" type="date" />
+          </div>
+          <div>
+            <label>Check-out (data)</label>
+            <input id="prenoOut" type="date" />
+          </div>
+
+          <div>
+            <label>Orario arrivo</label>
+            <input id="prenoOra" type="time" />
+          </div>
+          <div>
+            <label>N. ospiti</label>
+            <input id="prenoOspiti" type="number" min="1" value="2" />
+          </div>
+
+          <div>
+            <label>Prezzo totale (€)</label>
+            <input id="prenoPrezzo" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          <div>
+            <label>Tassa soggiorno (€)</label>
+            <input id="prenoTassa" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+
+          <div class="form" style="grid-column:1/-1">
+            <label>Note</label>
+            <textarea id="prenoNote" placeholder="Es. Arrivo tardi, culla, ecc."></textarea>
+          </div>
+
+          <div>
+            <label>Stato</label>
+            <select id="prenoStato">
+              <option value="prenotata">Prenotata</option>
+              <option value="checkin">Check-in fatto</option>
+              <option value="checkout">Check-out fatto</option>
+              <option value="annullata">Annullata</option>
+            </select>
+          </div>
+
+          <div class="row" style="align-items:end">
+            <button type="submit" class="btn primary" id="btnSavePreno">Salva</button>
+            <button type="button" class="btn danger" id="btnDeletePreno" disabled>Elimina</button>
+          </div>
+
+          <div class="small muted" style="grid-column:1/-1">
+            Suggerimento: al “Check-out fatto” crea automaticamente un task pulizia per il giorno del check-out.
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="row space">
+          <h2 style="margin:0">Elenco prenotazioni</h2>
+          <div class="row">
+            <select id="filterApp" class="small" style="width:auto">
+              <option value="ALL">Tutti (A+B)</option>
+              <option value="A">Solo App A</option>
+              <option value="B">Solo App B</option>
+            </select>
+            <select id="filterStato" class="small" style="width:auto">
+              <option value="ALL">Tutti stati</option>
+              <option value="prenotata">Prenotata</option>
+              <option value="checkin">Check-in fatto</option>
+              <option value="checkout">Check-out fatto</option>
+              <option value="annullata">Annullata</option>
+            </select>
+            <button class="btn" id="btnExport">Export</button>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="small muted" id="listEmpty">Nessuna prenotazione ancora.</div>
+        <table class="table hidden" id="tblPreno">
+          <thead>
+            <tr>
+              <th>Periodo</th>
+              <th>Ospite</th>
+              <th>App</th>
+              <th>Stato</th>
+              <th class="right">€</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tblPrenoBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALENDARIO -->
+  <section id="tab-calendario" class="tabpanel hidden">
+    <div class="card">
+      <div class="row space">
+        <h2 style="margin:0">Calendario</h2>
+        <div class="row">
+          <button class="btn" id="calPrev">◀</button>
+          <div class="pill"><span id="calLabel"></span></div>
+          <button class="btn" id="calNext">▶</button>
+          <button class="btn" id="calToday">Oggi</button>
+        </div>
+      </div>
+      <div class="hr"></div>
+
+      <div class="cal" id="calGrid"></div>
+      <div class="hr"></div>
+      <div class="small muted" id="calHint">Clicca un giorno per vedere le prenotazioni.</div>
+      <div id="calDayDetails" class="small"></div>
+    </div>
+  </section>
+
+  <!-- PULIZIE -->
+  <section id="tab-pulizie" class="tabpanel hidden">
+    <div class="grid cols2">
+      <div class="card">
+        <div class="row space">
+          <h2 style="margin:0">Pulizie</h2>
+          <button class="btn" id="btnAddPulizia">+ Nuova pulizia</button>
+        </div>
+        <div class="hr"></div>
+        <div id="pulizieEmpty" class="small muted">Nessuna pulizia programmata.</div>
+        <table class="table hidden" id="tblPulizie">
+          <thead>
+            <tr><th>Data</th><th>App</th><th>Note</th><th>Stato</th><th></th></tr>
+          </thead>
+          <tbody id="tblPulizieBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Checklist rapida</h2>
+        <div class="small muted">Spunte veloci (non salvate):</div>
+        <div class="hr"></div>
+        <div class="form">
+          <label><input type="checkbox"> Bagno</label>
+          <label><input type="checkbox"> Letto e biancheria</label>
+          <label><input type="checkbox"> Pavimenti</label>
+          <label><input type="checkbox"> Cucina</label>
+          <label><input type="checkbox"> Spazzatura</label>
+          <label><input type="checkbox"> Controllo danni</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORT -->
+  <section id="tab-report" class="tabpanel hidden">
+    <div class="grid cols2">
+      <div class="card">
+        <h2>Incassi (mese selezionato)</h2>
+        <div class="row">
+          <input type="month" id="repMonth" style="width:auto" />
+          <button class="btn" id="btnRefreshReport">Aggiorna</button>
+        </div>
+        <div class="hr"></div>
+        <div class="kpi"><div class="n" id="repIncassi">0</div><div class="l">€ totali (prenotate / check-in / check-out)</div></div>
+        <div class="small muted">Nota: gli “Annullata” non vengono contati.</div>
+      </div>
+
+      <div class="card">
+        <h2>Occupazione (mese selezionato)</h2>
+        <div class="small muted">Stima notti occupate per App A e B.</div>
+        <div class="hr"></div>
+        <table class="table">
+          <thead><tr><th>App</th><th>Notti occupate</th></tr></thead>
+          <tbody>
+            <tr><td>App A</td><td id="repNottiA">0</td></tr>
+            <tr><td>App B</td><td id="repNottiB">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMPOSTAZIONI -->
+  <section id="tab-impostazioni" class="tabpanel hidden">
+    <div class="grid cols2">
+      <div class="card">
+        <h2>Impostazioni</h2>
+        <div class="form cols2">
+          <div>
+            <label>Nome casa</label>
+            <input id="setNomeCasa" placeholder="Es. Re di Roma Apartments" />
+          </div>
+          <div>
+            <label>Orario standard check-in</label>
+            <input id="setOraIn" type="time" />
+          </div>
+          <div>
+            <label>Orario standard check-out</label>
+            <input id="setOraOut" type="time" />
+          </div>
+          <div class="row" style="align-items:end">
+            <button class="btn primary" id="btnSaveSettings">Salva</button>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <h2 style="font-size:14px;margin:0 0 8px">Template messaggi</h2>
+        <div class="form">
+          <label>Messaggio pre check-in</label>
+          <textarea id="tplCheckin"></textarea>
+          <label>Messaggio check-out</label>
+          <textarea id="tplCheckout"></textarea>
+          <div class="row">
+            <button class="btn" id="btnCopyCheckin">Copia check-in</button>
+            <button class="btn" id="btnCopyCheckout">Copia check-out</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Backup / Ripristino</h2>
+        <div class="small muted">Funziona anche aprendo il file. Salva un JSON sul PC.</div>
+        <div class="hr"></div>
+        <div class="row">
+          <button class="btn" id="btnBackup">Scarica Backup (JSON)</button>
+          <label class="btn" style="display:inline-flex; align-items:center; gap:8px">
+            Ripristina
+            <input id="fileRestore" type="file" accept="application/json" style="display:none" />
+          </label>
+        </div>
+        <div class="hr"></div>
+        <h2 style="font-size:14px;margin:0 0 8px">Reset totale</h2>
+        <button class="btn danger" id="btnResetAll">Cancella TUTTI i dati</button>
+        <div class="small muted" style="margin-top:8px">Attenzione: azione irreversibile.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* =========================
+   CASA VACANZE - STANDALONE
+   - Tutto in un file
+   - Funziona su file://
+   - Dati in localStorage
+   ========================= */
+
+const LS_KEY = "cv_standalone_v1";
+const SETTINGS_KEY = "cv_settings_v1";
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+function todayISO(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const da = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${da}`;
+}
+function fmtEUR(n){
+  const v = Number(n||0);
+  return v.toLocaleString("it-IT", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function diffDays(startISO, endISO){
+  // nights between dates: [start, end)
+  const s = new Date(startISO+"T00:00:00");
+  const e = new Date(endISO+"T00:00:00");
+  const ms = e - s;
+  return Math.max(0, Math.round(ms / (1000*60*60*24)));
+}
+function clampStr(s){ return (s||"").trim(); }
+
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(toast._tm);
+  toast._tm = setTimeout(()=> t.style.display="none", 2200);
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return { prenotazioni: [], pulizie: [] };
+    const obj = JSON.parse(raw);
+    obj.prenotazioni ||= [];
+    obj.pulizie ||= [];
+    return obj;
+  }catch(e){
+    console.warn(e);
+    return { prenotazioni: [], pulizie: [] };
+  }
+}
+function saveState(state){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+
+function loadSettings(){
+  const def = {
+    nomeCasa: "Casa Vacanze - Gestione",
+    oraIn: "15:00",
+    oraOut: "10:00",
+    tplCheckin: "Ciao {NOME},\nTi aspettiamo oggi. Check-in dalle {ORA_IN}.\nWi‑Fi: (inserisci qui)\nA presto!",
+    tplCheckout: "Ciao {NOME},\nRicordo check-out entro le {ORA_OUT}.\nPer favore lascia le chiavi come concordato.\nGrazie!"
+  };
+  try{
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if(!raw) return def;
+    const obj = JSON.parse(raw);
+    return {...def, ...obj};
+  }catch(e){ return def; }
+}
+function saveSettings(s){
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+}
+
+let state = loadState();
+let settings = loadSettings();
+
+/* ===== Tabs ===== */
+function showTab(name){
+  $$(".tabbtn").forEach(b => b.classList.toggle("active", b.dataset.tab===name));
+  $$(".tabpanel").forEach(p => p.classList.add("hidden"));
+  const panel = $("#tab-"+name);
+  if(panel) panel.classList.remove("hidden");
+  // refresh section
+  if(name==="dashboard") renderDashboard();
+  if(name==="prenotazioni") renderPrenotazioni();
+  if(name==="calendario") renderCalendario();
+  if(name==="pulizie") renderPulizie();
+  if(name==="report") renderReport();
+  if(name==="impostazioni") renderSettings();
+}
+
+$$(".tabbtn").forEach(b => b.addEventListener("click", ()=> showTab(b.dataset.tab)));
+
+/* ===== Prenotazioni CRUD ===== */
+function uuid(){
+  // simple unique id
+  return "p_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8);
+}
+function getPrenoForm(){
+  return {
+    id: $("#prenoId").value || "",
+    app: $("#prenoApp").value,
+    canale: $("#prenoCanale").value,
+    nome: clampStr($("#prenoNome").value),
+    tel: clampStr($("#prenoTel").value),
+    checkin: $("#prenoIn").value,
+    checkout: $("#prenoOut").value,
+    ora: $("#prenoOra").value,
+    ospiti: Number($("#prenoOspiti").value||1),
+    prezzo: Number($("#prenoPrezzo").value||0),
+    tassa: Number($("#prenoTassa").value||0),
+    note: clampStr($("#prenoNote").value),
+    stato: $("#prenoStato").value
+  };
+}
+function setPrenoForm(p){
+  $("#prenoId").value = p?.id || "";
+  $("#prenoApp").value = p?.app || "A";
+  $("#prenoCanale").value = p?.canale || "Airbnb";
+  $("#prenoNome").value = p?.nome || "";
+  $("#prenoTel").value = p?.tel || "";
+  $("#prenoIn").value = p?.checkin || "";
+  $("#prenoOut").value = p?.checkout || "";
+  $("#prenoOra").value = p?.ora || "";
+  $("#prenoOspiti").value = p?.ospiti ?? 2;
+  $("#prenoPrezzo").value = (p?.prezzo ?? "");
+  $("#prenoTassa").value = (p?.tassa ?? "");
+  $("#prenoNote").value = p?.note || "";
+  $("#prenoStato").value = p?.stato || "prenotata";
+  $("#btnDeletePreno").disabled = !p?.id;
+}
+function resetPrenoForm(){
+  setPrenoForm({app:"A", canale:"Airbnb", ospiti:2, stato:"prenotata", ora: settings.oraIn});
+  $("#prenoIn").value = todayISO();
+  const d = new Date();
+  d.setDate(d.getDate()+2);
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), da=String(d.getDate()).padStart(2,"0");
+  $("#prenoOut").value = `${y}-${m}-${da}`;
+  $("#btnDeletePreno").disabled = true;
+}
+
+$("#btnNuovaPrenoTop").addEventListener("click", ()=> { showTab("prenotazioni"); resetPrenoForm(); });
+$("#btnResetForm").addEventListener("click", resetPrenoForm);
+
+$("#formPreno").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const p = getPrenoForm();
+  if(!p.nome){ toast("Inserisci il nome ospite."); return; }
+  if(!p.checkin || !p.checkout){ toast("Inserisci date check-in e check-out."); return; }
+  if(new Date(p.checkout) <= new Date(p.checkin)){ toast("Il check-out deve essere dopo il check-in."); return; }
+
+  const isNew = !p.id;
+  if(isNew) p.id = uuid();
+
+  // auto set ora if empty
+  if(!p.ora) p.ora = settings.oraIn;
+
+  // save
+  const idx = state.prenotazioni.findIndex(x=>x.id===p.id);
+  if(idx>=0) state.prenotazioni[idx]=p;
+  else state.prenotazioni.push(p);
+
+  // auto-create pulizia when checkout
+  if(p.stato==="checkout"){
+    ensurePuliziaForCheckout(p);
+  }
+
+  saveState(state);
+  toast(isNew ? "Prenotazione salvata." : "Prenotazione aggiornata.");
+  renderPrenotazioni();
+  renderDashboard();
+  renderCalendario();
+  renderPulizie();
+});
+
+$("#btnDeletePreno").addEventListener("click", ()=>{
+  const id = $("#prenoId").value;
+  if(!id) return;
+  if(!confirm("Eliminare questa prenotazione?")) return;
+  state.prenotazioni = state.prenotazioni.filter(p=>p.id!==id);
+  saveState(state);
+  toast("Prenotazione eliminata.");
+  resetPrenoForm();
+  renderPrenotazioni();
+  renderDashboard();
+  renderCalendario();
+});
+
+function pillForStatus(st){
+  if(st==="prenotata") return `<span class="pill warn">Prenotata</span>`;
+  if(st==="checkin") return `<span class="pill ok">Check-in</span>`;
+  if(st==="checkout") return `<span class="pill ok">Check-out</span>`;
+  if(st==="annullata") return `<span class="pill danger">Annullata</span>`;
+  return `<span class="pill">${st}</span>`;
+}
+function renderPrenotazioni(){
+  const appF = $("#filterApp").value;
+  const stF = $("#filterStato").value;
+
+  let arr = [...state.prenotazioni];
+  arr.sort((a,b)=> (a.checkin||"").localeCompare(b.checkin||""));
+
+  if(appF!=="ALL") arr = arr.filter(p=>p.app===appF);
+  if(stF!=="ALL") arr = arr.filter(p=>p.stato===stF);
+
+  const empty = $("#listEmpty");
+  const tbl = $("#tblPreno");
+  const body = $("#tblPrenoBody");
+  body.innerHTML = "";
+
+  if(arr.length===0){
+    empty.classList.remove("hidden");
+    tbl.classList.add("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+  tbl.classList.remove("hidden");
+
+  for(const p of arr){
+    const nights = diffDays(p.checkin, p.checkout);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><div><strong>${p.checkin}</strong> → <strong>${p.checkout}</strong></div><div class="muted small">${nights} notti</div></td>
+      <td><div><strong>${escapeHtml(p.nome)}</strong></div><div class="muted small">${escapeHtml(p.tel||"")}</div></td>
+      <td><span class="pill">${p.app}</span></td>
+      <td>${pillForStatus(p.stato)}</td>
+      <td class="right">${fmtEUR(p.prezzo)}</td>
+      <td class="right">
+        <button class="btn" data-edit="${p.id}">Apri</button>
+        <button class="btn" data-msg="${p.id}">Messaggi</button>
+      </td>
+    `;
+    body.appendChild(tr);
+  }
+
+  // bind
+  $$("button[data-edit]").forEach(b => b.onclick = ()=>{
+    const id = b.getAttribute("data-edit");
+    const p = state.prenotazioni.find(x=>x.id===id);
+    if(p){ setPrenoForm(p); toast("Caricata in modifica."); window.scrollTo({top:0, behavior:"smooth"}); }
+  });
+  $$("button[data-msg]").forEach(b => b.onclick = ()=>{
+    const id = b.getAttribute("data-msg");
+    const p = state.prenotazioni.find(x=>x.id===id);
+    if(!p) return;
+    const m1 = buildMsg(settings.tplCheckin, p);
+    const m2 = buildMsg(settings.tplCheckout, p);
+    const text = `CHECK-IN:\n\n${m1}\n\n---\nCHECK-OUT:\n\n${m2}`;
+    copyToClipboard(text);
+    toast("Messaggi copiati negli appunti.");
+  });
+}
+
+$("#filterApp").addEventListener("change", renderPrenotazioni);
+$("#filterStato").addEventListener("change", renderPrenotazioni);
+
+$("#btnExport").addEventListener("click", ()=>{
+  const rows = [["id","app","nome","tel","checkin","checkout","ora","ospiti","prezzo","tassa","canale","stato","note"]];
+  for(const p of state.prenotazioni){
+    rows.push([p.id,p.app,p.nome,p.tel,p.checkin,p.checkout,p.ora,p.ospiti,p.prezzo,p.tassa,p.canale,p.stato,(p.note||"").replaceAll("\n"," ")]);
+  }
+  const csv = rows.map(r => r.map(v => `"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n");
+  downloadText(csv, "prenotazioni.csv", "text/csv");
+});
+
+function downloadText(text, filename, mime){
+  const blob = new Blob([text], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1200);
+}
+
+/* ===== Pulizie ===== */
+function uidClean(){ return "c_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8); }
+
+function ensurePuliziaForCheckout(p){
+  // create if not exists for that booking id
+  const exists = state.pulizie.some(c => c.prenoId===p.id);
+  if(exists) return;
+  state.pulizie.push({
+    id: uidClean(),
+    data: p.checkout,
+    app: p.app,
+    note: `Pulizia dopo soggiorno: ${p.nome}`,
+    done: false,
+    prenoId: p.id
+  });
+}
+
+function renderPulizie(){
+  let arr = [...state.pulizie];
+  arr.sort((a,b)=> (a.data||"").localeCompare(b.data||""));
+
+  const empty = $("#pulizieEmpty");
+  const tbl = $("#tblPulizie");
+  const body = $("#tblPulizieBody");
+  body.innerHTML = "";
+
+  if(arr.length===0){
+    empty.classList.remove("hidden");
+    tbl.classList.add("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+  tbl.classList.remove("hidden");
+
+  for(const c of arr){
+    const tr = document.createElement("tr");
+    const st = c.done ? `<span class="pill ok">Fatto</span>` : `<span class="pill warn">Da fare</span>`;
+    tr.innerHTML = `
+      <td><strong>${c.data}</strong></td>
+      <td><span class="pill">${c.app}</span></td>
+      <td>${escapeHtml(c.note||"")}</td>
+      <td>${st}</td>
+      <td class="right">
+        <button class="btn" data-done="${c.id}">${c.done ? "Annulla" : "Fatto"}</button>
+        <button class="btn danger" data-del="${c.id}">X</button>
+      </td>
+    `;
+    body.appendChild(tr);
+  }
+
+  $$("button[data-done]").forEach(b => b.onclick = ()=>{
+    const id = b.getAttribute("data-done");
+    const c = state.pulizie.find(x=>x.id===id);
+    if(!c) return;
+    c.done = !c.done;
+    saveState(state);
+    renderPulizie();
+    toast(c.done ? "Segnata come fatta." : "Segnata da fare.");
+  });
+  $$("button[data-del]").forEach(b => b.onclick = ()=>{
+    const id = b.getAttribute("data-del");
+    if(!confirm("Eliminare questa pulizia?")) return;
+    state.pulizie = state.pulizie.filter(x=>x.id!==id);
+    saveState(state);
+    renderPulizie();
+    toast("Pulizia eliminata.");
+  });
+}
+
+$("#btnAddPulizia").addEventListener("click", ()=>{
+  const data = prompt("Data pulizia (AAAA-MM-GG):", todayISO());
+  if(!data) return;
+  const app = prompt("Appartamento (A o B):", "A");
+  const note = prompt("Note:", "Pulizia");
+  state.pulizie.push({id:uidClean(), data, app:(app||"A").toUpperCase()==="B"?"B":"A", note: note||"", done:false, prenoId:""});
+  saveState(state);
+  renderPulizie();
+  toast("Pulizia aggiunta.");
+});
+
+/* ===== Dashboard ===== */
+function upcomingForApp(app){
+  const today = todayISO();
+  // find next reservation that is not cancelled and ends after today
+  const arr = state.prenotazioni
+    .filter(p=>p.app===app && p.stato!=="annullata")
+    .sort((a,b)=> (a.checkin||"").localeCompare(b.checkin||""));
+  for(const p of arr){
+    if(p.checkout >= today) return p;
+  }
+  return null;
+}
+function statusForApp(app){
+  const today = todayISO();
+  // check current occupancy by date range
+  const cur = state.prenotazioni.find(p =>
+    p.app===app && p.stato!=="annullata" &&
+    p.checkin <= today && p.checkout > today
+  );
+  if(cur){
+    return {label:"Occupato", pill:"danger", next:`Ospite: ${cur.nome} • fino ${cur.checkout}`};
+  }
+  // if there is cleaning pending today or past
+  const clean = state.pulizie.find(c => c.app===app && !c.done && c.data <= today);
+  if(clean){
+    return {label:"Da pulire", pill:"warn", next:`Pulizia: ${clean.data}`};
+  }
+  const next = upcomingForApp(app);
+  if(next) return {label:"Libero", pill:"ok", next:`Prossimo arrivo: ${next.checkin}`};
+  return {label:"Libero", pill:"ok", next:"Nessun evento in calendario"};
+}
+function renderDashboard(){
+  const today = todayISO();
+  const arrivi = state.prenotazioni.filter(p=>p.stato!=="annullata" && p.checkin===today);
+  const partenze = state.prenotazioni.filter(p=>p.stato!=="annullata" && p.checkout===today);
+
+  $("#kpiArrivi").textContent = arrivi.length;
+  $("#kpiPartenze").textContent = partenze.length;
+
+  // table status
+  const sA = statusForApp("A");
+  const sB = statusForApp("B");
+  $("#tblStati").innerHTML = `
+    <tr><td><strong>App A</strong></td><td><span class="pill ${sA.pill}">${sA.label}</span></td><td class="small muted">${escapeHtml(sA.next)}</td></tr>
+    <tr><td><strong>App B</strong></td><td><span class="pill ${sB.pill}">${sB.label}</span></td><td class="small muted">${escapeHtml(sB.next)}</td></tr>
+  `;
+
+  // lists
+  $("#dashArrivi").innerHTML = arrivi.length? arrivi.map(p => dashLine(p, "arrivo")).join("") : `<span class="muted">Nessun arrivo oggi.</span>`;
+  $("#dashPartenze").innerHTML = partenze.length? partenze.map(p => dashLine(p, "partenza")).join("") : `<span class="muted">Nessuna partenza oggi.</span>`;
+}
+
+function dashLine(p, type){
+  const st = pillForStatus(p.stato);
+  const when = type==="arrivo" ? (p.ora || settings.oraIn) : settings.oraOut;
+  return `
+    <div class="card" style="padding:10px; margin:8px 0; box-shadow:none">
+      <div class="row space">
+        <div>
+          <div><strong>${escapeHtml(p.nome)}</strong> <span class="pill">${p.app}</span></div>
+          <div class="small muted">${type==="arrivo"?"Check-in":"Check-out"} • ore ${escapeHtml(when||"")}</div>
+        </div>
+        <div class="row">
+          ${st}
+          <button class="btn" onclick="openPreno('${p.id}')">Apri</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+window.openPreno = function(id){
+  const p = state.prenotazioni.find(x=>x.id===id);
+  if(!p) return;
+  showTab("prenotazioni");
+  setPrenoForm(p);
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+
+$("#btnRefreshDash").addEventListener("click", renderDashboard);
+$("#btnBackupTop").addEventListener("click", ()=> showTab("impostazioni"));
+
+/* ===== Calendario ===== */
+let calYear, calMonth; // month 0-11
+function setCalTo(date){
+  calYear = date.getFullYear();
+  calMonth = date.getMonth();
+}
+setCalTo(new Date());
+
+function monthLabel(y,m){
+  const d = new Date(y,m,1);
+  return d.toLocaleDateString("it-IT", {month:"long", year:"numeric"});
+}
+function renderCalendario(){
+  $("#calLabel").textContent = monthLabel(calYear, calMonth);
+  const grid = $("#calGrid");
+  grid.innerHTML = "";
+
+  const dows = ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
+  for(const s of dows){
+    const el = document.createElement("div");
+    el.className = "dow";
+    el.textContent = s;
+    grid.appendChild(el);
+  }
+
+  const first = new Date(calYear, calMonth, 1);
+  // convert JS Sunday=0.. to Monday-based offset
+  const js = first.getDay(); // 0 sun
+  const offset = (js===0?6:js-1); // 0 for Monday
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+  // blanks
+  for(let i=0;i<offset;i++){
+    const blank = document.createElement("div");
+    blank.className = "day";
+    blank.style.visibility="hidden";
+    grid.appendChild(blank);
+  }
+
+  for(let day=1; day<=daysInMonth; day++){
+    const iso = toISO(calYear, calMonth, day);
+    const el = document.createElement("div");
+    el.className = "day";
+    el.innerHTML = `<div class="d">${day}</div><div class="mini" id="mini-${iso}"></div>`;
+    el.addEventListener("click", ()=> showDay(iso));
+    grid.appendChild(el);
+
+    // markers
+    const markers = buildMarkersForDay(iso);
+    $("#mini-"+iso).innerHTML = markers || `<span class="muted">—</span>`;
+  }
+
+  $("#calDayDetails").innerHTML = "";
+}
+
+function toISO(y,m,day){
+  const mm = String(m+1).padStart(2,"0");
+  const dd = String(day).padStart(2,"0");
+  return `${y}-${mm}-${dd}`;
+}
+
+function buildMarkersForDay(iso){
+  const items = [];
+  for(const p of state.prenotazioni){
+    if(p.stato==="annullata") continue;
+    if(p.checkin===iso){
+      items.push(`<div><span class="dot o"></span> Arrivo ${escapeHtml(p.app)} (${escapeHtml(p.nome)})</div>`);
+    }
+    if(p.checkout===iso){
+      items.push(`<div><span class="dot b"></span> Partenza ${escapeHtml(p.app)} (${escapeHtml(p.nome)})</div>`);
+    }
+    if(p.checkin < iso && p.checkout > iso){
+      items.push(`<div><span class="dot r"></span> Occupato ${escapeHtml(p.app)}</div>`);
+    }
+  }
+  // pulizie
+  for(const c of state.pulizie){
+    if(c.data===iso){
+      items.push(`<div><span class="dot g"></span> Pulizia ${escapeHtml(c.app)} ${c.done?"(fatta)":"(da fare)"}</div>`);
+    }
+  }
+  return items.slice(0,3).join("");
+}
+
+function showDay(iso){
+  const list = [];
+  const ps = state.prenotazioni.filter(p=>p.stato!=="annullata" && (p.checkin===iso || p.checkout===iso || (p.checkin < iso && p.checkout > iso)));
+  ps.sort((a,b)=> (a.checkin||"").localeCompare(b.checkin||""));
+  for(const p of ps){
+    let tag = "";
+    if(p.checkin===iso) tag = `<span class="pill warn">Arrivo</span>`;
+    else if(p.checkout===iso) tag = `<span class="pill ok">Partenza</span>`;
+    else tag = `<span class="pill danger">Occupato</span>`;
+    list.push(`<div class="card" style="padding:10px; box-shadow:none; margin:8px 0">
+      <div class="row space">
+        <div><strong>${escapeHtml(p.nome)}</strong> <span class="pill">${p.app}</span></div>
+        <div class="row">${tag}<button class="btn" onclick="openPreno('${p.id}')">Apri</button></div>
+      </div>
+      <div class="small muted">${p.checkin} → ${p.checkout} • ${diffDays(p.checkin,p.checkout)} notti</div>
+    </div>`);
+  }
+
+  const cs = state.pulizie.filter(c=>c.data===iso);
+  for(const c of cs){
+    list.push(`<div class="card" style="padding:10px; box-shadow:none; margin:8px 0">
+      <div class="row space">
+        <div><strong>Pulizia</strong> <span class="pill">${escapeHtml(c.app)}</span></div>
+        <div>${c.done?`<span class="pill ok">Fatto</span>`:`<span class="pill warn">Da fare</span>`}</div>
+      </div>
+      <div class="small muted">${escapeHtml(c.note||"")}</div>
+    </div>`);
+  }
+
+  $("#calDayDetails").innerHTML = `<div class="pill">Dettagli: <span class="mono">${iso}</span></div>` + (list.length? list.join("") : `<div class="small muted" style="margin-top:8px">Nessun evento.</div>`);
+}
+
+$("#calPrev").addEventListener("click", ()=>{
+  const d = new Date(calYear, calMonth, 1);
+  d.setMonth(d.getMonth()-1);
+  setCalTo(d);
+  renderCalendario();
+});
+$("#calNext").addEventListener("click", ()=>{
+  const d = new Date(calYear, calMonth, 1);
+  d.setMonth(d.getMonth()+1);
+  setCalTo(d);
+  renderCalendario();
+});
+$("#calToday").addEventListener("click", ()=>{
+  setCalTo(new Date());
+  renderCalendario();
+});
+
+/* ===== Report ===== */
+function renderReport(){
+  // default month = current
+  if(!$("#repMonth").value){
+    const d = new Date();
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0");
+    $("#repMonth").value = `${y}-${m}`;
+  }
+  computeReport();
+}
+function computeReport(){
+  const val = $("#repMonth").value;
+  if(!val) return;
+  const [y, m] = val.split("-").map(Number);
+  const start = `${y}-${String(m).padStart(2,"0")}-01`;
+  const endDate = new Date(y, m, 0); // last day of month (m is 1-12 here)
+  const end = `${y}-${String(m).padStart(2,"0")}-${String(endDate.getDate()).padStart(2,"0")}`;
+
+  let inc = 0;
+  let nightsA=0, nightsB=0;
+
+  for(const p of state.prenotazioni){
+    if(p.stato==="annullata") continue;
+    // count if overlaps month
+    if(p.checkout < start || p.checkin > end) continue;
+    inc += Number(p.prezzo||0);
+    // nights in month overlap estimate
+    const s = p.checkin < start ? start : p.checkin;
+    const e = p.checkout > nextDay(end) ? nextDay(end) : p.checkout;
+    const n = diffDays(s, e);
+    if(p.app==="A") nightsA += n; else nightsB += n;
+  }
+
+  $("#repIncassi").textContent = fmtEUR(inc);
+  $("#repNottiA").textContent = nightsA;
+  $("#repNottiB").textContent = nightsB;
+}
+function nextDay(iso){
+  const d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate()+1);
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), da=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${da}`;
+}
+$("#btnRefreshReport").addEventListener("click", computeReport);
+
+/* ===== Settings + Backup ===== */
+function renderSettings(){
+  $("#titleApp").textContent = settings.nomeCasa || "Casa Vacanze - Gestione";
+  $("#setNomeCasa").value = settings.nomeCasa || "";
+  $("#setOraIn").value = settings.oraIn || "15:00";
+  $("#setOraOut").value = settings.oraOut || "10:00";
+  $("#tplCheckin").value = settings.tplCheckin || "";
+  $("#tplCheckout").value = settings.tplCheckout || "";
+}
+$("#btnSaveSettings").addEventListener("click", ()=>{
+  settings.nomeCasa = clampStr($("#setNomeCasa").value) || "Casa Vacanze - Gestione";
+  settings.oraIn = $("#setOraIn").value || "15:00";
+  settings.oraOut = $("#setOraOut").value || "10:00";
+  settings.tplCheckin = $("#tplCheckin").value || "";
+  settings.tplCheckout = $("#tplCheckout").value || "";
+  saveSettings(settings);
+  renderSettings();
+  toast("Impostazioni salvate.");
+});
+
+function buildMsg(tpl, p){
+  return (tpl||"")
+    .replaceAll("{NOME}", p.nome||"")
+    .replaceAll("{ORA_IN}", settings.oraIn||"")
+    .replaceAll("{ORA_OUT}", settings.oraOut||"")
+    .replaceAll("{APP}", p.app||"");
+}
+function copyToClipboard(text){
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).catch(()=> fallbackCopy(text));
+  }else{
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text){
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position="fixed"; ta.style.left="-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand("copy");
+  ta.remove();
+}
+$("#btnCopyCheckin").addEventListener("click", ()=> { copyToClipboard($("#tplCheckin").value); toast("Copiato."); });
+$("#btnCopyCheckout").addEventListener("click", ()=> { copyToClipboard($("#tplCheckout").value); toast("Copiato."); });
+
+$("#btnBackup").addEventListener("click", ()=>{
+  const payload = { version:1, savedAt: new Date().toISOString(), state, settings };
+  downloadText(JSON.stringify(payload,null,2), `backup-casa-vacanze-${todayISO()}.json`, "application/json");
+  toast("Backup creato.");
+});
+
+$("#fileRestore").addEventListener("change", async (e)=>{
+  const f = e.target.files?.[0];
+  if(!f) return;
+  try{
+    const txt = await f.text();
+    const obj = JSON.parse(txt);
+    if(!obj.state) throw new Error("Backup non valido.");
+    state = obj.state;
+    settings = obj.settings || settings;
+    saveState(state);
+    saveSettings(settings);
+    toast("Ripristino completato.");
+    renderAll();
+  }catch(err){
+    console.error(err);
+    alert("Errore nel ripristino: " + err.message);
+  }finally{
+    e.target.value = "";
+  }
+});
+
+$("#btnResetAll").addEventListener("click", ()=>{
+  if(!confirm("Confermi cancellazione totale dati?")) return;
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(SETTINGS_KEY);
+  state = loadState();
+  settings = loadSettings();
+  toast("Dati cancellati.");
+  renderAll();
+});
+
+/* ===== Helpers ===== */
+function escapeHtml(s){
+  return String(s||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* ===== Init ===== */
+function renderAll(){
+  renderSettings();
+  renderDashboard();
+  renderPrenotazioni();
+  renderCalendario();
+  renderPulizie();
+  renderReport();
+}
+$("#btnBackupTop").addEventListener("click", ()=> showTab("impostazioni"));
+
+resetPrenoForm();
+renderAll();
+showTab("dashboard");
+</script>
+
+<script>
+(function(){
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./service-worker.js').catch(function(){});
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,23 +1,17 @@
-/* Casa Vacanze Offline SW (HTTPS required on iOS) */
-const CACHE_NAME = "casa-vacanze-offline-v2";
+/* Casa Vacanze - Service Worker (GitHub Pages) */
+const CACHE_NAME = "casa-vacanze-cache-v1";
 const ASSETS = [
   "./",
-  "./icons/icon-120x120.png",
-  "./icons/icon-128x128.png",
-  "./icons/icon-144x144.png",
-  "./icons/icon-152x152.png",
-  "./icons/icon-167x167.png",
-  "./icons/icon-180x180.png",
+  "./index.html",
+  "./indice.html",
+  "./logo.jpg",
+  "./manifest.webmanifest",
+  "./manifesto.webmanifest",
+  "./service-worker.js",
   "./icons/icon-192x192.png",
   "./icons/icon-256x256.png",
   "./icons/icon-384x384.png",
-  "./icons/icon-512x512.png",
-  "./icons/icon-72x72.png",
-  "./icons/icon-96x96.png",
-  "./index.html",
-  "./logo.jpg",
-  "./manifest.webmanifest",
-  "./service-worker.js"
+  "./icons/icon-512x512.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -36,11 +30,16 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
+  if (req.method !== "GET") return;
+
   event.respondWith(
-    caches.match(req).then((cached) => cached || fetch(req).then((res) => {
-      const copy = res.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-      return res;
-    }).catch(() => caches.match("./index.html")))
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
+      return fetch(req).then((resp) => {
+        const copy = resp.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(()=>{});
+        return resp;
+      }).catch(() => caches.match("./index.html"));
+    })
   );
 });
