@@ -205,33 +205,36 @@
 
 @media print{
   body{background:#fff !important}
-  /* hide UI */
   .topbar, .tabs, .btn, button, input, textarea, select, .no-print{display:none !important}
-
-  /* hide everything by default */
-  .tabpanel{display:none !important}
-  section{display:none !important}
-
-  /* show only selected target */
-  .print-target{display:block !important}
-
-  /* layout tweaks */
+  .tabpanel, section{display:block !important}
+  .card, .panel, .planning-wrap{box-shadow:none !important}
   .planning-wrap{overflow:visible !important}
   .planning-table{width:100% !important}
-  .card, .panel{box-shadow:none !important}
-  h1,h2{color:#000 !important}
-}
-.print-only{display:none}
+  .print-only{display:block !important}
   h1,h2{color:#000 !important}
 }
 .print-only{display:none}
 
-
-@page{ size: A4 landscape; margin: 10mm; }
 </style>
 
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#ffffff">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CasaVacanze">
+<link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+<script>
+(function(){
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./service-worker.js').catch(function(e){
+        console.log('SW registration failed', e);
+      });
+    });
+  }
+})();
+</script>
 </head>
 <body>
 <header>
@@ -490,7 +493,7 @@
     <div class="card">
       <div class="row space">
         <h2 style="margin:0">Calendario</h2>
-        <div class="row"><button class="btn" id="btnPDFCalendario" onclick="printSectionPDF(\'calendario\')">🖨️ PDF</button><button class="btn" id="btnPrintCalendario" onclick="printCurrentView()" onclick="printTab('calendario')">🖨️ Stampa</button>
+        <div class="row"><button class="btn primary" id="btnXlsCalendario" onclick="exportCalendarioExcel2()">⬇ Excel</button><button class="btn" id="btnPrintCalendario" onclick="printCurrentView()" onclick="printTab('calendario')" onclick="printTab(\'calendario\')">🖨️ Stampa</button>
           <button class="btn" id="calPrev">◀</button>
           <div class="pill"><span id="calLabel"></span></div>
           <button class="btn" id="calNext">▶</button>
@@ -583,7 +586,7 @@
   <section id="tab-contabilita" class="tabpanel hidden">
     <div class="row space">
       <h2 style="margin:0">Contabilità</h2>
-      <div class="row"><button class="btn" id="btnPDFReport" onclick="printSectionPDF(\'report\')">🖨️ PDF</button><button class="btn" id="btnPDFContabilita" onclick="printSectionPDF(\'contabilita\')">🖨️ PDF</button><button class="btn" id="btnPrintContabilita" onclick="printCurrentView()" onclick="printTab('contabilita')">🖨️ Stampa</button>
+      <div class="row"><button class="btn primary" id="btnXlsReport2" onclick="exportReportExcel2()">⬇ Excel</button><button class="btn primary" id="btnXlsContabilita2" onclick="exportContabilitaExcel2()">⬇ Excel</button><button class="btn" id="btnPrintContabilita" onclick="printCurrentView()" onclick="printTab('contabilita')" onclick="printTab(\'contabilita\')">🖨️ Stampa</button>
         <span class="badge">Periodo</span>
         <input id="accFrom" type="date" />
         <span class="muted">→</span>
@@ -675,7 +678,7 @@
 <section id="tab-planning" class="tabpanel hidden">
   <div class="row space">
     <h2 style="margin:0">Planning</h2>
-    <div class="row" style="gap:10px; align-items:center"><button class="btn" id="btnPDFPlanning" onclick="printSectionPDF(\'planning\')">🖨️ PDF</button><button class="btn" id="btnPrintPlanning" onclick="printCurrentView()" onclick="printTab('planning')">🖨️ Stampa</button>
+    <div class="row" style="gap:10px; align-items:center"><button class="btn" id="btnPrintPlanning" onclick="printCurrentView()" onclick="printTab('planning')" onclick="printTab(\'planning\')">🖨️ Stampa</button>
       <button class="btn" id="plPrev">◀</button>
       <div class="badge-mini" id="plLabel">Mese</div>
       <button class="btn" id="plNext">▶</button>
@@ -1222,19 +1225,7 @@ $("#btnExport").addEventListener("click", ()=>{
   }
   table += "</table>";
 
-  const html = `<!doctype html><html><head><meta charset="utf-8">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#ffffff">
-</head><body>${table}
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(console.error);
-    });
-  }
-</script>
-
-</body></html>`;
+  const html = `<!doctype html><html><head><meta charset="utf-8"></head><body>${table}</body></html>`;
   downloadText(html, `prenotazioni-${todayISO()}.xls`, "application/vnd.ms-excel");
   toast("Export Excel creato.");
 });
@@ -1383,19 +1374,7 @@ $("#btnExportPulizie").addEventListener("click", ()=>{
   }
   table += "</table>";
 
-  const html = `<!doctype html><html><head><meta charset="utf-8">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#ffffff">
-</head><body>${table}
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(console.error);
-    });
-  }
-</script>
-
-</body></html>`;
+  const html = `<!doctype html><html><head><meta charset="utf-8"></head><body>${table}</body></html>`;
   downloadText(html, `pulizie-${todayISO()}.xls`, "application/vnd.ms-excel");
   toast("Export pulizie creato.");
 });
@@ -1870,19 +1849,7 @@ $("#btnAccExport").addEventListener("click", ()=>{
   }
   table += "</table>";
 
-  const html = `<!doctype html><html><head><meta charset="utf-8">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#ffffff">
-</head><body>${table}
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(console.error);
-    });
-  }
-</script>
-
-</body></html>`;
+  const html = `<!doctype html><html><head><meta charset="utf-8"></head><body>${table}</body></html>`;
   downloadText(html, `contabilita-${todayISO()}.xls`, "application/vnd.ms-excel");
   toast("Export contabilità creato.");
 });
@@ -2168,15 +2135,7 @@ let planningCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1
 function bookingsForApp(code){
   return (state.prenotazioni||[]).filter(p => (p.app||"A")===code && p.stato!=="annullata");
 }
-function isOccupiedOnDay(p, day){
-  const ci = parseDateAny(p.checkin);
-  const co = parseDateAny(p.checkout);
-  if(!ci || !co) return false;
-  const start = new Date(ci.getFullYear(), ci.getMonth(), ci.getDate());
-  const end = new Date(co.getFullYear(), co.getMonth(), co.getDate());
-  const d = new Date(day.getFullYear(), day.getMonth(), day.getDate());
-  return d >= start && d < end;
-}
+function isOccupiedOnDay(p, day){ return isOccupiedRange(p.checkin, p.checkout, day); }
 function findBookingOnDay(app, day){
   const arr = bookingsForApp(app);
   return arr.find(p => isOccupiedOnDay(p, day)) || null;
@@ -2336,23 +2295,11 @@ function printSectionNewWindow(tabName, titolo){
       .planning-wrap{overflow:visible !important;}
       .planning-table{width:100% !important;}
     </style>
-  
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#ffffff">
-</head><body>
+  </head><body>
     <h2 style="margin:0 0 10px 0">${titolo||""}</h2>
     ${el.outerHTML}
     <script>window.onload=function(){ setTimeout(()=>{ window.print(); }, 200); }<\/script>
-  
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(console.error);
-    });
-  }
-</script>
-
-</body></html>`);
+  </body></html>`);
   w.document.close();
 }
 
@@ -2368,31 +2315,305 @@ bindPrint("btnPrintPlanning","planning","Planning");
 bindPrint("btnPrintContabilita","contabilita","Contabilità");
 bindPrint("btnPrintReport","report","Report");
 
-// ===== PDF (stampa in A4 ORIZZONTALE) =====
-// Nota: genera la finestra di stampa del browser. Per ottenere un PDF scegli "Salva come PDF".
-function setPrintTargetByTab(tabName){
-  document.querySelectorAll(".print-target").forEach(el=>el.classList.remove("print-target"));
-  const el = document.getElementById("tab-"+tabName);
-  if(el) el.classList.add("print-target");
+function isOccupiedRange(checkinStr, checkoutStr, dayDate){
+  const ci = parseDateAny(checkinStr);
+  const co = parseDateAny(checkoutStr);
+  if(!ci || !co) return false;
+  const start = new Date(ci.getFullYear(), ci.getMonth(), ci.getDate());
+  const end = new Date(co.getFullYear(), co.getMonth(), co.getDate());
+  const d = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
+  return d >= start && d < end; // checkout day not occupied
 }
-function printSectionPDF(tabName){
-  try{ showTab(tabName); }catch(e){}
-  setPrintTargetByTab(tabName);
-  // IMPORTANT: call synchronously (no setTimeout) so browser allows print
-  window.print();
-}
-window.addEventListener("afterprint", ()=>{
-  document.querySelectorAll(".print-target").forEach(el=>el.classList.remove("print-target"));
-});
-</script>
 
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./service-worker.js").catch(console.error);
-    });
+function downloadTextFile(filename, mime, text){
+  const blob = new Blob([text], {type: mime});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+}
+function csvEscape(v){
+  const s = String(v ?? "");
+  if(/[",\n;]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+  return s;
+}
+function exportPlanningExcel(){
+  // exports a month grid as CSV (one row per apt, one column per day)
+  const first = new Date(planningCursor.getFullYear(), planningCursor.getMonth(), 1);
+  const daysInMonth = new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
+  const header = ["Appartamento"];
+  for(let d=1; d<=daysInMonth; d++) header.push(String(d));
+  const rows = [header];
+
+  const apps = [
+    {code:"A", label:"Appartamento 1 OpenSpace"},
+    {code:"B", label:"Appartamento 2 MyHome"},
+  ];
+
+  for(const a of apps){
+    const r = [a.label];
+    for(let d=1; d<=daysInMonth; d++){
+      const day = new Date(first.getFullYear(), first.getMonth(), d);
+      const booking = (state.prenotazioni||[]).find(p => (p.app||"A")===a.code && p.stato!=="annullata" && isOccupiedRange(p.checkin,p.checkout,day));
+      const clean = (state.pulizie||[]).find(c => (c.app||"A")===a.code && !c.done && parseDateAny(c.data) && parseDateAny(c.data).getFullYear()==day.getFullYear() && parseDateAny(c.data).getMonth()==day.getMonth() && parseDateAny(c.data).getDate()==day.getDate());
+      if(booking) r.push("OCCUPATO");
+      else if(clean) r.push("PULIZIA");
+      else r.push("LIBERO");
+    }
+    rows.push(r);
   }
-</script>
 
+  const csv = rows.map(r=>r.map(csvEscape).join(";")).join("\n");
+  const mm = String(first.getMonth()+1).padStart(2,"0");
+  downloadTextFile(`planning_${first.getFullYear()}_${mm}.csv`, "text/csv;charset=utf-8", csv);
+}
+
+function exportContabilitaExcel2(){
+  const rows = [["Data","Appartamento","Ospite","Notti","Entrata","IVA%","IVA","Pulizia","Spese varie","Tassa soggiorno","Netto"]];
+  for(const p of (state.prenotazioni||[])){
+    if(p.stato==="annullata") continue;
+    const ci = parseDateAny(p.checkin);
+    const co = parseDateAny(p.checkout);
+    let nights = 0;
+    if(ci && co){
+      const start = new Date(ci.getFullYear(), ci.getMonth(), ci.getDate());
+      const end = new Date(co.getFullYear(), co.getMonth(), co.getDate());
+      nights = Math.max(0, Math.round((end-start)/(1000*60*60*24)));
+    }
+    const entrata = Number(p.prezzo||0);
+    const ivaPerc = Number((p.ivaPerc ?? settings.ivaPerc) || 0);
+    const iva = entrata * ivaPerc/100;
+    const pul = Number(p.pulizia||0);
+    const sp = Number(p.speseVarie||0);
+    const tass = Number(p.tassa||0);
+    const netto = entrata - iva - pul - sp; // tassa soggiorno a parte
+    rows.push([
+      p.checkin||"",
+      (p.app==="B"?"Appartamento 2 MyHome":"Appartamento 1 OpenSpace"),
+      fullName(p),
+      nights,
+      entrata.toFixed(2),
+      ivaPerc,
+      iva.toFixed(2),
+      pul.toFixed(2),
+      sp.toFixed(2),
+      tass.toFixed(2),
+      netto.toFixed(2),
+    ]);
+  }
+  const csv = rows.map(r=>r.map(csvEscape).join(";")).join("\n");
+  downloadTextFile("contabilita.csv","text/csv;charset=utf-8",csv);
+}
+function exportReportExcel2(){
+  // export current report month summary
+  const val = document.getElementById("repMonth")?.value || "";
+  const inc = document.getElementById("repIncassi")?.textContent || "";
+  const na = document.getElementById("repNottiA")?.textContent || "";
+  const nb = document.getElementById("repNottiB")?.textContent || "";
+  const csv = ["Mese;Incassi;Notti OpenSpace;Notti MyHome", `${csvEscape(val)};${csvEscape(inc)};${csvEscape(na)};${csvEscape(nb)}`].join("\n");
+  downloadTextFile("report.csv","text/csv;charset=utf-8",csv);
+}
+function exportCalendarioExcel2(){
+  // export bookings list for current calendar month if available in inputs (fallback: all)
+  const csvRows = [["Appartamento","Ospite","Check-in","Check-out","Telefono","Totale"]];
+  for(const p of (state.prenotazioni||[])){
+    if(p.stato==="annullata") continue;
+    csvRows.push([
+      (p.app==="B"?"Appartamento 2 MyHome":"Appartamento 1 OpenSpace"),
+      fullName(p),
+      p.checkin||"",
+      p.checkout||"",
+      p.tel||"",
+      Number(p.totale||0).toFixed(2)
+    ]);
+  }
+  const csv = csvRows.map(r=>r.map(csvEscape).join(";")).join("\n");
+  downloadTextFile("calendario_prenotazioni.csv","text/csv;charset=utf-8",csv);
+}
+
+// ===== STAMPA (solo sezione) =====
+function printTab(tabName){
+  // ensure content rendered
+  try{
+    if(tabName==="calendario" && typeof renderCalendario==="function") renderCalendario();
+    if(tabName==="planning" && typeof renderPlanning==="function") renderPlanning();
+    if(tabName==="contabilita" && typeof renderContabilita==="function") renderContabilita();
+    if(tabName==="report" && typeof renderReport==="function") renderReport();
+  }catch(e){}
+
+  const src = document.getElementById("tab-"+tabName);
+  if(!src){ toast("Sezione non trovata."); return; }
+
+  const clone = src.cloneNode(true);
+  // remove interactive elements in print
+  clone.querySelectorAll("button, input, textarea, select").forEach(el=>el.remove());
+
+  // expand scroll areas
+  clone.querySelectorAll(".planning-wrap").forEach(el=>{
+    el.style.overflow="visible";
+    el.style.maxHeight="none";
+    el.style.height="auto";
+  });
+
+  const css = `
+    @page{ size: A4 landscape; margin: 10mm; }
+    body{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#111; }
+    h2{ margin:0; }
+    .header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;}
+    .logo{height:42px;}
+    .meta{font-size:12px; color:#555;}
+    table{border-collapse:collapse; width:100%;}
+    th,td{border:1px solid #ddd; padding:6px; font-size:12px;}
+    /* disable sticky in print */
+    .planning-table th.sticky, .planning-table td.sticky{position:static !important;}
+    .planning-table th.day{position:static !important;}
+  `;
+
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2,"0");
+  const mm = String(now.getMonth()+1).padStart(2,"0");
+  const yy = now.getFullYear();
+  const ts = `${dd}/${mm}/${yy}`;
+
+  const title = (tabName==="calendario")?"Calendario":
+                (tabName==="planning")?"Planning":
+                (tabName==="contabilita")?"Contabilità":
+                (tabName==="report")?"Report":"Stampa";
+
+  const htmlDoc = `
+<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
+<style>${css}</style></head>
+<body>
+  <div class="header">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <img class="logo" src="logo.jpg" alt="logo" />
+      <div>
+        <h2>${title}</h2>
+        <div class="meta">Data stampa: ${ts}</div>
+      </div>
+    </div>
+  </div>
+  <div id="content"></div>
+</body></html>`;
+
+  let iframe = document.getElementById("printFrame");
+  if(!iframe){
+    iframe = document.createElement("iframe");
+    iframe.id = "printFrame";
+    iframe.style.position="fixed";
+    iframe.style.right="0";
+    iframe.style.bottom="0";
+    iframe.style.width="0";
+    iframe.style.height="0";
+    iframe.style.border="0";
+    document.body.appendChild(iframe);
+  }
+
+  const doc = iframe.contentWindow.document;
+  doc.open(); doc.write(htmlDoc); doc.close();
+
+  const mount = ()=> {
+    try{
+      const c = doc.getElementById("content");
+      c.innerHTML = "";
+      c.appendChild(doc.importNode(clone, true));
+      const img = doc.querySelector("img.logo");
+      const go = ()=>{ iframe.contentWindow.focus(); iframe.contentWindow.print(); };
+      if(img && !img.complete){ img.onload = go; img.onerror = go; }
+      else go();
+    }catch(e){
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    }
+  };
+  setTimeout(mount, 80);
+}
+
+
+// ===== MIGRAZIONE DATE (GG/MM/AAAA -> YYYY-MM-DD) =====
+function isITDate(s){ return typeof s==="string" && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s.trim()); }
+function itToISO(s){
+  const m = s.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(!m) return s;
+  const dd = m[1].padStart(2,"0");
+  const mm = m[2].padStart(2,"0");
+  const yy = m[3];
+  return `${yy}-${mm}-${dd}`;
+}
+function migrateDatesIfNeeded(){
+  let changed = false;
+  try{
+    for(const p of (state.prenotazioni||[])){
+      if(isITDate(p.checkin)){ p.checkin = itToISO(p.checkin); changed = true; }
+      if(isITDate(p.checkout)){ p.checkout = itToISO(p.checkout); changed = true; }
+    }
+    for(const c of (state.pulizie||[])){
+      if(isITDate(c.data)){ c.data = itToISO(c.data); changed = true; }
+    }
+  }catch(e){}
+  if(changed){
+    try{ saveState(state); }catch(e){}
+  }
+}
+
+// ===== REFRESH STABILE =====
+function rerenderAll(){
+  try{ if(typeof renderDashboard==="function") renderDashboard(); }catch(e){}
+  try{ if(typeof renderPrenotazioni==="function") renderPrenotazioni(); }catch(e){}
+  try{ if(typeof renderCalendario==="function") renderCalendario(); }catch(e){}
+  try{ if(typeof renderPlanning==="function") renderPlanning(); }catch(e){}
+  try{ if(typeof renderPulizie==="function") renderPulizie(); }catch(e){}
+  try{ if(typeof renderReport==="function") renderReport(); }catch(e){}
+  try{ if(typeof renderContabilita==="function") renderContabilita(); }catch(e){}
+}
+document.addEventListener("DOMContentLoaded", ()=>{
+  migrateDatesIfNeeded();
+  // render current tab content after migration
+  setTimeout(()=>{ try{ rerenderAll(); }catch(e){} }, 50);
+});
+
+
+
+// ===== FIX WHATSAPP BOTTONI (delegation) =====
+document.addEventListener("click", (ev)=>{
+  const t = ev.target;
+  if(!t) return;
+
+  const bMsg = t.closest && t.closest("button[data-msg]");
+  if(bMsg){
+    ev.preventDefault();
+    const id = bMsg.getAttribute("data-msg");
+    const p = (state.prenotazioni||[]).find(x=>x.id===id);
+    if(!p){ toast("Prenotazione non trovata."); return; }
+    openWAMessage(p, ""); // chat vuota
+    return;
+  }
+
+  const bIn = t.closest && t.closest("button[data-wa-in]");
+  if(bIn){
+    ev.preventDefault();
+    const id = bIn.getAttribute("data-wa-in");
+    const p = (state.prenotazioni||[]).find(x=>x.id===id);
+    if(!p){ toast("Prenotazione non trovata."); return; }
+    const msg = buildMsg(settings.tplCheckin, p);
+    openWAMessage(p, msg);
+    return;
+  }
+
+  const bOut = t.closest && t.closest("button[data-wa-out]");
+  if(bOut){
+    ev.preventDefault();
+    const id = bOut.getAttribute("data-wa-out");
+    const p = (state.prenotazioni||[]).find(x=>x.id===id);
+    if(!p){ toast("Prenotazione non trovata."); return; }
+    const msg = buildMsg(settings.tplCheckout, p);
+    openWAMessage(p, msg);
+    return;
+  }
+});
+
+</script>
 </body>
 </html>

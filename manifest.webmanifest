@@ -1,19 +1,29 @@
 {
-  "name": "Casa Vacanze",
+  "name": "Casa Vacanze - Gestione",
   "short_name": "CasaVacanze",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/casa-vacanze-offline/index.html",
+  "scope": "/casa-vacanze-offline/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#f5f7f8",
+  "theme_color": "#227b43",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "icons/icon-256x256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
